@@ -1,290 +1,193 @@
-/********
- * Arduino Pong
- * By Pete Lamonica
- *  modified by duboisvb
- *  updated by James Bruce (http://www.makeuseof.com/tag/author/jbruce
- * A simple implementation of Pong on the Arduino using a TV for output.
- *
- */
- 
- 
-#include <TVout.h>
-#include <fontALL.h>
+#define PIN_SCE   7
+#define PIN_RESET 6
+#define PIN_DC    5
+#define PIN_SDIN  11
+#define PIN_SCLK  13
 
-#define WHEEL_ONE_PIN 0 //analog
-#define WHEEL_TWO_PIN 1 //analog
-#define BUTTON_ONE_PIN 2 //digital to start game
-// #define BUTTON_TWO_PIN 3 //digital to reset and go back to main menu
- 
-#define PADDLE_HEIGHT 14
-#define PADDLE_WIDTH 1
- 
-#define RIGHT_PADDLE_X (TV.hres()-4)
-#define LEFT_PADDLE_X 2
- 
-#define IN_GAMEA 0 //in game state - draw constants of the game box
-#define IN_GAMEB 0 //in game state - draw the dynamic part of the game
+#define LCD_C     LOW
+#define LCD_D     HIGH
 
-#define IN_MENU 1 //in menu state
-#define GAME_OVER 2 //game over state
- 
-#define LEFT_SCORE_X (TV.hres()/2-15)
-#define RIGHT_SCORE_X (TV.hres()/2+10)
-#define SCORE_Y 4
- 
-#define MAX_Y_VELOCITY 6
-#define PLAY_TO 7
- 
-#define LEFT 0
-#define RIGHT 1
- 
-TVout TV;
-unsigned char x,y;
+#define LCD_X     84
+#define LCD_Y     18
 
-boolean button1Status = false;
-// boolean button2Status = false;
+int barWidth = 16;
+int barHeight = 4;
+int ballPerimeter = 4;
+unsigned int bar1X = 0;
+unsigned int bar1Y = 0;
+unsigned int bar2X = 0;
+unsigned int bar2Y = LCD_Y * 8 - barHeight;
+int ballX = 0;
+int ballY = 0;
+boolean isBallUp = false;
+boolean isBallRight = true;
 
-int wheelOnePosition = 0;
-int wheelTwoPosition = 0;
-int rightPaddleY = 0;
-int leftPaddleY = 0;
-unsigned char ballX = 0;
-unsigned char ballY = 0;
-char ballVolX = 2;
-char ballVolY = 2;
- 
-int leftPlayerScore = 0;
-int rightPlayerScore = 0;
- 
-int frame = 0;
-int state = IN_MENU;
- 
-void processInputs() {
-  wheelOnePosition = analogRead(WHEEL_ONE_PIN);
-  // delay(50);
-  wheelTwoPosition = analogRead(WHEEL_TWO_PIN);
- // delay(50);
-   button1Status = (digitalRead(BUTTON_ONE_PIN));
-  
- //  button2Status = (digitalRead(BUTTON_TWO_PIN) == LOW);
-   if ((button1Status == 0)&& (state == GAME_OVER))
-   {
-     Serial.println("game over, drawing menu");
-     drawMenu ();
-   }
-  
- 
-   delay(50);
-  //Serial.println(button1Status);
-  //Serial.println(state);
-  //Serial.println(button2Status);
-  //Serial.println(wheelOnePosition);
-   //Serial.println(wheelTwoPosition);
- 
+byte pixels[LCD_X][LCD_Y];
+unsigned long lastRefreshTime;
+const int refreshInterval = 150;
+byte gameState = 1;
+byte ballSpeed = 2;
+byte player1WinCount = 0;
+byte player2WinCount = 0;
+byte hitCount = 0;
 
+void setup(){
+  //Serial.begin(9600);
+  LcdInitialise();
+  restartGame();
 }
- 
-void drawGameScreen() {
- //  TV.clear_screen();
-  //draw right paddle
-  rightPaddleY = ((wheelOnePosition /8) * (TV.vres()-PADDLE_HEIGHT))/ 128;
-  x = RIGHT_PADDLE_X;
-  for(int i=0; i<PADDLE_WIDTH; i++) {
-    TV.draw_line(x+i,rightPaddleY,x+i,rightPaddleY+PADDLE_HEIGHT,1);
-  }
- 
-  //draw left paddle
-  leftPaddleY = ((wheelTwoPosition /8) * (TV.vres()-PADDLE_HEIGHT))/ 128;
-  x = LEFT_PADDLE_X;
-  for(int i=0; i<PADDLE_WIDTH; i++) {
-    TV.draw_line(x+i,leftPaddleY,x+i,leftPaddleY+PADDLE_HEIGHT,1);
-  }
- 
-  //draw score
-  TV.print_char(LEFT_SCORE_X,SCORE_Y,'0'+leftPlayerScore);
-  TV.print_char(RIGHT_SCORE_X,SCORE_Y,'0'+rightPlayerScore);
- 
-  
-  
- 
- 
-  
-  //draw ball
-  TV.set_pixel(ballX, ballY, 2);
+
+void loop(){
+  unsigned long now = millis();
+  if(now - lastRefreshTime > refreshInterval){
+      update();
+      refreshScreen();
+      lastRefreshTime = now;  
+  }  
 }
- 
-//player == LEFT or RIGHT
-void playerScored(byte player) {
-  if(player == LEFT) leftPlayerScore++;
-  if(player == RIGHT) rightPlayerScore++;
- 
-  //check for win
-  if(leftPlayerScore == PLAY_TO || rightPlayerScore == PLAY_TO) {
-    state = GAME_OVER;
-  }
- 
-  ballVolX = -ballVolX;
+
+void restartGame(){
+   ballSpeed = 1;
+   gameState = 1;
+   ballX = random(0, 60);
+   ballY = 20;
+   isBallUp = false; 
+   isBallRight = true;
+   hitCount = 0;
 }
- 
- 
- 
- void drawBox() {
-      TV.clear_screen();
-      
-   //draw net
-  for(int i=1; i<TV.vres() - 4; i+=6) {
-    TV.draw_line(TV.hres()/2,i,TV.hres()/2,i+3,1);
-  }
-  // had to make box a bit smaller to fit tv 
-    TV.draw_line(0, 0, 0,95,1 );  // left
-   TV.draw_line(0, 0, 126,0,1 ); // top
-    TV.draw_line(126, 0, 126,95,1 ); // right
-     TV.draw_line(0, 95, 126,95,1 ); // bottom
-  
-  
-  state = IN_GAMEB;
-}
- 
- 
-void drawMenu() {
-  x = 0;
-  y = 0;
-  char volX =3;
-  char volY = 3;
-  TV.clear_screen();
-  TV.select_font(font8x8);
-  TV.print(10, 5, "Arduino Pong");
-  TV.select_font(font4x6);
-  TV.print(22, 35, "Press Button");
-  TV.print(30, 45, "To Start");
-  
-  
-  delay(1000);
-  while(!button1Status) {
-    Serial.println("menu");
-  Serial.println(button1Status);
-  
-    processInputs();
-    TV.delay_frame(3);
-    if(x + volX < 1 || x + volX > TV.hres() - 1) volX = -volX;
-    if(y + volY < 1 || y + volY > TV.vres() - 1) volY = -volY;
-    if(TV.get_pixel(x + volX, y + volY)) {
-      TV.set_pixel(x + volX, y + volY, 0);
-    
-      if(TV.get_pixel(x + volX, y - volY) == 0) {
-        volY = -volY;
-      }
-      else if(TV.get_pixel(x - volX, y + volY) == 0) {
-        volX = -volX;
-      }
-      else {
-        volX = -volX;
-        volY = -volY;
-      }
+
+void refreshScreen(){
+  if(gameState == 1){
+    for(int y = 0; y < LCD_Y; y++){
+        for(int x = 0; x < LCD_X; x++){
+           byte pixel = 0x00;
+           int realY = y * 8;
+           // draw ball if in the frame
+           if(x >= ballX && x <= ballX + ballPerimeter -1 && ballY + ballPerimeter > realY && ballY < realY + 8 ){
+             byte ballMask = 0x00;
+             for(int i = 0; i < realY + 8 - ballY; i++){
+               ballMask = ballMask >> 1;
+               if(i < ballPerimeter)
+                 ballMask = 0x80 | ballMask;
+             }
+             pixel = pixel | ballMask;
+           }
+           
+           // draw bars if in the frame
+           if(x >= bar1X && x <= bar1X + barWidth -1 && bar1Y + barHeight > realY && bar1Y < realY + 8 ){
+             byte barMask = 0x00;
+             for(int i = 0; i < realY + 8 - bar1Y; i++){
+               barMask = barMask >> 1;
+               if(i < barHeight)
+                 barMask = 0x80 | barMask;
+             }
+             pixel = pixel | barMask;
+           }
+           
+           if(x >= bar2X && x <= bar2X + barWidth -1 && bar2Y + barHeight > realY && bar2Y < realY + 8 ){
+             byte barMask = 0x00;
+             for(int i = 0; i < realY + 8 - bar2Y; i++){
+               barMask = barMask >> 1;
+               if(i < barHeight)
+                 barMask = 0x80 | barMask;
+             }
+             pixel = pixel | barMask;
+           }
+           LCDWrite(LCD_D, pixel);
+         }
     }
-    TV.set_pixel(x, y, 0);
-    x += volX;
-    y += volY;
-    TV.set_pixel(x, y, 1);
+  } else if(gameState == 2){
+      
   }
- 
- 
- 
-  TV.select_font(font4x6);
-  state = IN_GAMEA;
 }
- 
-void setup()  {
-    //Serial.begin(9600);
-  x=0;
-  y=0;
-  TV.begin(_NTSC);       //for devices with only 1k sram(m168) use TV.begin(_NTSC,128,56)
- 
-  ballX = TV.hres() / 2;
-  ballY = TV.vres() / 2;
- 
-//  pinMode(BUTTON_ONE_PIN, INPUT);      // sets the digital pin as output
-}
- 
-void loop() {
-  processInputs();
- 
 
- 
- 
-  if(state == IN_MENU) {
-  drawMenu();
-  }
- if(state == IN_GAMEA) {
-  //Serial.println("gamA");
-  //Serial.println(button1Status);
-  
-  drawBox();
-  }
- 
-  if(state == IN_GAMEB) {
-  if(frame % 3 == 0) { //every third frame
-  ballX += ballVolX;
-  ballY += ballVolY;
- 
- // change if hit top or bottom
-if(ballY <= 1 || ballY >= TV.vres()-1)
- { ballVolY = -ballVolY;
-  delay(100);
- }
-  // test left side for wall hit    
-  if(ballVolX < 0 && ballX == LEFT_PADDLE_X+PADDLE_WIDTH-1 && ballY >= leftPaddleY && ballY <= leftPaddleY + PADDLE_HEIGHT) {
-  ballVolX = -ballVolX;
-ballVolY += 2 * ((ballY - leftPaddleY) - (PADDLE_HEIGHT / 2)) / (PADDLE_HEIGHT / 2);
- delay(100);
-  }
- // test right side for wall hit     
-  if(ballVolX > 0 && ballX == RIGHT_PADDLE_X && ballY >= rightPaddleY && ballY <= rightPaddleY + PADDLE_HEIGHT) {
-  ballVolX = -ballVolX; 
-  ballVolY += 2 * ((ballY - rightPaddleY) - (PADDLE_HEIGHT / 2)) / (PADDLE_HEIGHT / 2);
-  delay(100);
-  }
- 
-  //limit vertical speed
-  if(ballVolY > MAX_Y_VELOCITY) ballVolY = MAX_Y_VELOCITY;
-  if(ballVolY < -MAX_Y_VELOCITY) ballVolY = -MAX_Y_VELOCITY;
-  
- // Scoring
-  if(ballX <= 1) {
-  playerScored(RIGHT);
-  // sound 
-delay(100);
+void update(){
+  if(gameState == 1){
+     int barMargin = LCD_X - barWidth;
+     int pot1 = analogRead(A1); //read potentiometers and set the bar positions
+     int pot2 = analogRead(A2);
+     bar1X = pot1 / 2 * LCD_X / 512;
+     bar2X = pot2 / 2 * LCD_X / 512;
+    
+     if(bar1X > barMargin) bar1X = barMargin;
+     if(bar2X > barMargin) bar2X = barMargin;
+     
+     //move the ball now
+     if(isBallUp)
+       ballY -= ballSpeed;
+     else
+       ballY += ballSpeed;
+     if(isBallRight)
+       ballX += ballSpeed;
+     else
+       ballX -= ballSpeed;
+     //check collisions  
+     if(ballX < 1){
+       isBallRight = true;
+       ballX = 0;
+     }
+     else if(ballX > LCD_X - ballPerimeter - 1){
+       isBallRight = false;
+       ballX = LCD_X - ballPerimeter;
+     }
+     if(ballY < barHeight){
+       if(ballX + ballPerimeter >= bar1X && ballX <= bar1X + barWidth){ // ball bounces from bar1
+         isBallUp = false;
+         if(ballX + ballPerimeter/2 < bar1X + barWidth/2)
+           isBallRight = false;
+         else
+           isBallRight = true;
+         ballY = barHeight;
+         if(++hitCount % 10 == 0 && ballSpeed < 5) 
+           ballSpeed++;
+       }else{ //player2 wins
+         gameState = 2;
+         player2WinCount++;
+       }
+     }
+     if(ballY + ballPerimeter > LCD_Y * 8 - barHeight){
+       if(ballX + ballPerimeter >= bar2X && ballX <= bar2X + barWidth){ //ball bounces from bar2
+         isBallUp = true; 
+         if(ballX + ballPerimeter/2 < bar2X + barWidth/2)
+           isBallRight = false;
+         else
+           isBallRight = true;
+         ballY = LCD_Y * 8 - barHeight - ballPerimeter;
+         if(++hitCount % 10 == 0 && ballSpeed < 5) 
+           ballSpeed++;
+       }else{ // player 1 wins
+         gameState = 2;
+         player1WinCount++;
+       }
+     }
+  }else if(gameState == 2){
+      for(int i =0; i < 4; i++){
+        LCDWrite(LCD_C, 0x0D );  // LCD in inverse mode.
+        delay(300);
+        LCDWrite(LCD_C, 0x0C );  // LCD in inverse mode.
+        delay(300);
+      }
+      restartGame();
+  }  
 }
-if(ballX >= TV.hres() - 1) {
-playerScored(LEFT);
- // sound 
- delay(100);
-  }
-  }
- 
-  
-//    if(button1Status) Serial.println((int)ballVolX);
- 
-  drawGameScreen();
-  }
-  
-  if(state == GAME_OVER) {
-  drawGameScreen();
-  TV.select_font(font8x8);
-  TV.print(29,25,"GAME");
-  TV.print(68,25,"OVER");
-  while(!button1Status) {
-  processInputs();
-  delay(50);
-  }
-TV.select_font(font4x6); //reset the font
-  //reset the scores
-  leftPlayerScore = 0;
-  rightPlayerScore = 0;
-  state = IN_MENU;
-  }
- 
- 
-  TV.delay_frame(1);
-  if(++frame == 60) frame = 0; //increment and/or reset frame counter
+
+void LcdInitialise(void){
+  pinMode(PIN_SCE, OUTPUT);
+  pinMode(PIN_RESET, OUTPUT);
+  pinMode(PIN_DC, OUTPUT);
+  pinMode(PIN_SDIN, OUTPUT);
+  pinMode(PIN_SCLK, OUTPUT);
+  delay(200);
+  digitalWrite(PIN_RESET, LOW);
+  delay(500);
+  digitalWrite(PIN_RESET, HIGH);
+  LCDWrite(LCD_C, 0x21 );  // LCD Extended Commands.
+  LCDWrite(LCD_C, 0xB1 );  // Set LCD Vop (Contrast). 
+  LCDWrite(LCD_C, 0x04 );  // Set Temp coefficent. //0x04
+  LCDWrite(LCD_C, 0x14 );  // LCD bias mode 1:48. //0x13
+  LCDWrite(LCD_C, 0x0C );  // LCD in normal mode.
+  LCDWrite(LCD_C, 0x20 );
+  LCDWrite(LCD_C, 0x80 ); //select X Address 0 of the LCD Ram
+  LCDWrite(LCD_C, 0x40 ); //select Y Address 0 of the LCD Ram - Reset is not working for some reason, so I had to set these addresses
+  LCDWrite(LCD_C, 0x0C );
 }
