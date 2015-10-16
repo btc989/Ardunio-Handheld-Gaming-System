@@ -1,3 +1,46 @@
+/*
+ * Notes for Button and Joystick circuit
+ * 
+ * The space shows VIN; The following instructions are setup up 
+ * from the right side of pins to left ending with the space then pin
+ * 
+ * Far right:
+ * 
+ * Gnd -> Gnd
+ * A0 -> A0
+ * A1 -> A1
+ * A2 -> A2
+ * D1 -> 2
+ * P1 -> 3
+ * D2 -> 8 //far left button
+ * P2 -> 10
+ * D3 -> 12 //far right button
+ * P3 -> unkonw at moment out due to screen pins 6 or 11 are no longer avalable
+ * VDD -> 5V
+ * VIN -> VIN
+ * 
+ * I am not if all these pins are needed yet since the board have slots for
+ * two joysticks and we are only using one.
+ * 
+ * 
+ * 
+ * https://www.virtuabotix.com/running-a-versalino-load-board-with-a-regular-arduino/
+ * http://www.josephdattilo.com/writing-bluetooth-packet-based-sketch-versalino-control-board/
+ * https://www.virtuabotix.com/arduino-gamepad-versalino-control-1-0-pin-usage/
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ */
+
+
+
+
+
+
+
 #include <SPI.h> // We'll use SPI to transfer data. Faster!
 
 /* PCD8544-specific defines: */
@@ -123,8 +166,8 @@ const int sclkPin = 13;  // SCLK - Serial clock, pin 7 on LCD.
 const int blPin = 9;    // LED - Backlight LED, pin 8 on LCD.
 int buttonX =0;
 int buttonY =0; //for analog read in of joystick
+int buttonB = 8; //push button
 int buttonA = 12; //push button
-
 
 byte displayMap[LCD_WIDTH * LCD_HEIGHT / 8] = {
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // (0,0)->(11,7) ~ These 12 bytes cover an 8x12 block in the left corner of the display 
@@ -211,8 +254,8 @@ int menu() //This will hold the call for the menu: from this function
   //setLine(0, 0, LCD_WIDTH, LCD_HEIGHT, BLACK); //Function call to draw line under GAME MENU
 
   setStr(game1, 0, 12, BLACK);
-  setStr("Snake", 0, 22, BLACK);
-  setStr("Pong", 0, 32, BLACK);
+  setStr("SNAKE", 0, 22, BLACK);
+  setStr("PONG", 0, 32, BLACK);
   updateDisplay();
   delay(1000);
 
@@ -231,22 +274,23 @@ int menu() //This will hold the call for the menu: from this function
       {
         Serial.println("Made it into first if an count");
         count = 2;
-        setStr("Tic-Tac-Toe", 0, 12, BLACK);
+        setStr("TIC-TAC-TOE", 0, 12, BLACK);
         setStr(game2, 0, 22, BLACK);
-        setStr("Pong", 0, 32, BLACK);
+        setStr("PONG", 0, 32, BLACK);
         updateDisplay();
         delay(1000);
         pressA = digitalRead(buttonA);
         if(pressA == HIGH)
         {
+          
           return count;
         }
       }
       if(count == 2)
       {
         count = 3;
-        setStr("Tic-Tac-Toe", 0, 12, BLACK);
-        setStr("Snake", 0, 22, BLACK);
+        setStr("TIC-TAC-TOE", 0, 12, BLACK);
+        setStr("SNAKE", 0, 22, BLACK);
         setStr(game3, 0, 32, BLACK);
         updateDisplay();
         delay(1000);
@@ -254,15 +298,14 @@ int menu() //This will hold the call for the menu: from this function
         if(pressA == HIGH)
         {
           return count;
-        }
-        
+        }  
       }
       if(count == 3)
       {
         count = 1;
         setStr(game1, 0, 12, BLACK);
-        setStr("Snake", 0, 22, BLACK);
-        setStr("Pong", 0, 32, BLACK);
+        setStr("SNAKE", 0, 22, BLACK);
+        setStr("PONG", 0, 32, BLACK);
         updateDisplay();
         delay(1000);
         pressA = digitalRead(buttonA);
@@ -278,8 +321,8 @@ int menu() //This will hold the call for the menu: from this function
       if( count == 1)
       {
         count = 3;
-        setStr("Tic-Tac-Toe", 0, 12, BLACK);
-        setStr("Snake", 0, 22, BLACK);
+        setStr("TIC-TAC-TOE", 0, 12, BLACK);
+        setStr("SNAKE", 0, 22, BLACK);
         setStr(game3, 0, 32, BLACK);
         updateDisplay();
         delay(1000);
@@ -294,8 +337,8 @@ int menu() //This will hold the call for the menu: from this function
       {
         count = 1;
         setStr(game1, 0, 12, BLACK);
-        setStr("Snake", 0, 22, BLACK);
-        setStr("Pong", 0, 32, BLACK);
+        setStr("SNAKE", 0, 22, BLACK);
+        setStr("PONG", 0, 32, BLACK);
         updateDisplay();
         delay(1000);
         pressA = digitalRead(buttonA);
@@ -308,9 +351,9 @@ int menu() //This will hold the call for the menu: from this function
       if(count == 3)
       {
         count = 2;
-        setStr("Tic-Tac-Toe", 0, 12, BLACK);
+        setStr("TIC-TAC-TOE", 0, 12, BLACK);
         setStr(game2, 0, 22, BLACK);
-        setStr("Pong", 0, 32, BLACK);
+        setStr("PONG", 0, 32, BLACK);
         updateDisplay();
         delay(1000);
         pressA = digitalRead(buttonA);
@@ -319,13 +362,8 @@ int menu() //This will hold the call for the menu: from this function
           return count;
         }
       }
-      
-    }
-    
-  }
-
-
-  
+    } 
+  } 
 }
 void setPixel(int x, int y)
 {
@@ -534,3 +572,4 @@ void lcdBegin(void)
   LCDWrite(LCD_COMMAND, 0x20); 
   LCDWrite(LCD_COMMAND, 0x0C); //Set display control, normal mode.
 }
+
