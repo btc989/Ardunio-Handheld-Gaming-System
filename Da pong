@@ -9,7 +9,7 @@
 
 #define LCD_X     84
 #define LCD_Y     18
-
+//ball and pong paddle information
 int barWidth = 16;
 int barHeight = 4;
 int ballPerimeter = 4;
@@ -21,7 +21,7 @@ int ballX = 0;
 int ballY = 0;
 boolean isBallUp = false;
 boolean isBallRight = true;
-
+//Gameplay information
 byte pixels[LCD_X][LCD_Y];
 unsigned long lastRefreshTime;
 const int refreshInterval = 150;
@@ -32,7 +32,7 @@ byte player2WinCount = 0;
 byte hitCount = 0;
 
 void setup(){
-  //Serial.begin(9600);
+  Serial.begin(9600);
   LcdInitialise();
   restartGame();
 }
@@ -104,14 +104,18 @@ void refreshScreen(){
 void update(){
   if(gameState == 1){
      int barMargin = LCD_X - barWidth;
-     int pot1 = analogRead(A1); //read potentiometers and set the bar positions
-     int pot2 = analogRead(A2);
-     bar1X = pot1 / 2 * LCD_X / 512;
-     bar2X = pot2 / 2 * LCD_X / 512;
-    
-     if(bar1X > barMargin) bar1X = barMargin;
-     if(bar2X > barMargin) bar2X = barMargin;
+     //Input for player
+     int pot1 = analogRead(A0); 
+    //values for analog movement 
+     if (pot1 == [0,200]){
+      bar1 +=1; 
+     }
+     if (pot1 == [201,400]){
+      bar1 -=1;
+     }
      
+    //prevent player one from moving up
+     if(bar1 > barMargin) bar1 = barMargin;
      //move the ball now
      if(isBallUp)
        ballY -= ballSpeed;
