@@ -1,3 +1,6 @@
+//Code origin:https://github.com/monur/Arduino-Uno-PCD8544-Pong/blob/master/Pong.ino
+//Bluetooth refrence: https://github.com/pcantin/bt2bt_HCa/blob/master/bt2bt_HCa.ino
+
 #define PIN_SCE   7
 #define PIN_RESET 6
 #define PIN_DC    5
@@ -9,6 +12,16 @@
 
 #define LCD_X     84
 #define LCD_Y     18
+
+//Enable bluetooth communication
+#include <SoftwareSerial.h>
+//LCD libraries 
+#include <LCD-Map.h>
+//Set up the first bluetooth port(port values may interchange)
+int BluetoothPort1 = 13;
+int BluetoothPort2 = 12;
+//Set up serial comunication
+SoftwareSerial BTComunication(BluetoothPort1,BluetoothPort2);
 //ball and pong paddle information
 int barWidth = 16;
 int barHeight = 4;
@@ -21,10 +34,11 @@ int ballX = 0;
 int ballY = 0;
 boolean isBallUp = false;
 boolean isBallRight = true;
-//Gameplay information
+//Gameplay Visual information
 byte pixels[LCD_X][LCD_Y];
 unsigned long lastRefreshTime;
 const int refreshInterval = 150;
+//Game data information
 byte gameState = 1;
 byte ballSpeed = 2;
 byte player1WinCount = 0;
@@ -33,7 +47,9 @@ byte hitCount = 0;
 
 void setup(){
   Serial.begin(9600);
+  //Set up visual information
   LcdInitialise();
+  //Set game to in game state
   restartGame();
 }
 
@@ -47,13 +63,16 @@ void loop(){
 }
 
 void restartGame(){
+   //re-initialize gameplay info
    ballSpeed = 1;
    gameState = 1;
+   //Reinitialize ball information 
    ballX = random(0, 60);
    ballY = 20;
    isBallUp = false; 
    isBallRight = true;
    hitCount = 0;
+   BTComunication.flush();
 }
 
 void refreshScreen(){
@@ -70,7 +89,7 @@ void refreshScreen(){
                if(i < ballPerimeter)
                  ballMask = 0x80 | ballMask;
              }
-             pixel = pixel | ballMask;
+             pixel = pixel | ballM0ask;
            }
            
            // draw bars if in the frame
@@ -106,7 +125,7 @@ void update(){
      int barMargin = LCD_X - barWidth;
      //Input for player
      int pot1 = analogRead(A0); 
-    //values for analog movement 
+    //values for analog movement(P1)
      if (pot1 == [0,200]){
       bar1 +=1; 
      }
@@ -116,11 +135,12 @@ void update(){
      
     //prevent player one from moving up
      if(bar1 > barMargin) bar1 = barMargin;
-     //move the ball now
+     //Vertical Ball control
      if(isBallUp)
        ballY -= ballSpeed;
      else
        ballY += ballSpeed;
+    //Horizontal ball control
      if(isBallRight)
        ballX += ballSpeed;
      else
@@ -134,6 +154,7 @@ void update(){
        isBallRight = false;
        ballX = LCD_X - ballPerimeter;
      }
+     //Makes sure that the ball does not go past vertical axis 
      if(ballY < barHeight){
        if(ballX + ballPerimeter >= bar1X && ballX <= bar1X + barWidth){ // ball bounces from bar1
          isBallUp = false;
