@@ -15,7 +15,7 @@ Project Design:
 
   ~Screen HookUp:
       8 pins are used for the LCD Screen. The following decribes the hookup:
-      -VCC = 3.3 Volts ****PLEASE NOTE ANYMORE THEN 3.3 VOLTS WILL BLOW OUT THE LEDS IN THE SCREEN
+       -VCC = 3.3 Volts ****PLEASE NOTE ANYMORE THEN 3.3 VOLTS WILL BLOW OUT THE LEDS IN THE SCREEN
       -GND = Ground Pin
       -SCE = Pin 7  - Chip select
       -RST = Pin 6  - Reset
@@ -30,7 +30,7 @@ Project Design:
       
   ~ Bluetooth Hookup
       BHurl currently researching, will also update soon!
-      
+  
 
 Installation Instructions:
 
