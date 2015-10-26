@@ -18,7 +18,16 @@
  * P3 -> unkonw at moment out due to screen pins 6 or 11 are no longer avalable
  * VDD -> 5V
  * VIN -> VIN
- * 
+ * const byte PIN_BUTTON_SELECT = 2; 
+
+const byte PIN_BUTTON_RIGHT = 3;
+const byte PIN_BUTTON_UP = 4;
+const byte PIN_BUTTON_DOWN = 5;
+const byte PIN_BUTTON_LEFT = 6;
+
+const byte PIN_ANALOG_X = 0;
+const byte PIN_ANALOG_Y = 1;
+
  * I am not if all these pins are needed yet since the board have slots for
  * two joysticks and we are only using one.
  * 
