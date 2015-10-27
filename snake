@@ -1,0 +1,88 @@
+#include <TFT.h>  // Arduino LCD library
+#include <SPI.h>
+
+
+#define cs   10
+#define dc   9
+#define rst  8
+#define TFTscreenWidth 160
+#define TFTscreenHeight 128
+
+const byte PIN_BUTTON_RIGHT = 3;
+const byte PIN_BUTTON_UP = 4;
+const byte PIN_BUTTON_DOWN = 5;
+const byte PIN_BUTTON_LEFT = 6;
+
+const byte PIN_ANALOG_X = 0;
+const byte PIN_ANALOG_Y = 1;
+
+const int X_THRESHOLD_LOW = 505;
+const int X_THRESHOLD_HIGH = 515;    
+
+const int Y_THRESHOLD_LOW = 500;
+const int Y_THRESHOLD_HIGH = 510;    
+
+int x_position;
+int y_position;
+
+int x_direction;
+int y_direction;
+
+TFT TFTscreen = TFT(cs, dc, rst);
+
+int headX = 0;
+int headY = 0;
+int oldheadX = 0;
+int oldheadY = 0;
+int MoveX = 1;
+int MoveY = 1;
+int Speed = 15;
+int foodX = 0;
+int foodY = 0;
+  
+void setup() {
+TFTscreen.begin();
+TFTscreen.background(255, 255, 255); // fills the screen to white
+}
+
+void loop() {
+  food();
+  int myWidth = TFTscreen.width();
+  int myHeight = TFTscreen.height(); // sets screen dimentions
+
+  headX = map(analogRead(A0), 0, 1023, 16, myWidth) - 20 / 2;
+  headY = map(analogRead(A1), 0, 1023, 0, myHeight) - 5 / 2; // sets positon of snake head and pairs it with joystick
+
+  TFTscreen.fill(255, 255, 255); 
+
+  if (oldheadX != headX || oldheadY != headY) {
+    TFTscreen.rect(oldheadX, oldheadY, 4, 4); // deletes and creates the head as it moves
+  }
+  TFTscreen.fill(0, 0, 0); // makes the head black
+
+  TFTscreen.rect(headX, headY, 4, 4);
+  oldheadX = headX;
+  oldheadY = headY; // pairs the old head and the new head
+
+if (millis() % Speed < 2) {
+  movesnake();
+}
+}
+
+void movesnake() {
+  if (headX > TFTscreen.width() || headX < 0) {
+    headX = 16;
+  }
+  if (headY > TFTscreen.height() || headY < 0) { // makes sure the head doesnt pass the wall
+    headY = 0;
+  }
+  
+  }
+
+  void food() {
+   foodX = random TFTscreen.width() - 4);
+   foodY = random TFTscreen.height() - 4);
+
+    TFTscreen.rect(foodX, foodY, 4, 4);
+    TFTscreen.fill (0, 0, 0);
+    }
