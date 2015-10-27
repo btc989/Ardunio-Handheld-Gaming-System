@@ -173,10 +173,16 @@ const int dcPin = 5;    // DC - Data/Command, pin 5 on LCD.
 const int sdinPin = 11;  // DN(MOSI) - Serial data, pin 6 on LCD.
 const int sclkPin = 13;  // SCLK - Serial clock, pin 7 on LCD.
 const int blPin = 9;    // LED - Backlight LED, pin 8 on LCD.
-int buttonX =0;
-int buttonY =0; //for analog read in of joystick
-int buttonB = 12; //push button
-int buttonA = 8; //push button
+
+const byte PIN_BUTTON_SELECT = 2; 
+
+const byte PIN_BUTTON_RIGHT = 3;
+const byte PIN_BUTTON_UP = 4;
+const byte PIN_BUTTON_DOWN = 5;
+const byte PIN_BUTTON_LEFT = 6;
+
+const byte PIN_ANALOG_X = 0;
+const byte PIN_ANALOG_Y = 1;
 
 byte displayMap[LCD_WIDTH * LCD_HEIGHT / 8] = {
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // (0,0)->(11,7) ~ These 12 bytes cover an 8x12 block in the left corner of the display 
@@ -225,7 +231,7 @@ byte displayMap[LCD_WIDTH * LCD_HEIGHT / 8] = {
 void setup()
 {
   Serial.begin(9600);
-  pinMode(buttonA, INPUT);
+  pinMode(PIN_BUTTON_RIGHT, INPUT);
   lcdBegin(); // This will setup our pins, and initialize the LCD
   setContrast(55); // Pretty good value, play around with it
   updateDisplay(); // with displayMap untouched, SFE logo
@@ -240,8 +246,8 @@ void loop()
   static int cursorX = 0;
   static int cursorY = 0;
   int choice;
-  buttonX = analogRead(A2);
-  buttonY =  analogRead(A1);
+  int buttonX = analogRead(PIN_ANALOG_X);
+  int buttonY =  analogRead(PIN_ANALOG_Y);
   choice = menu(); //menu function call
   Serial.println("Made it back to menu");
   clearDisplay(state);
@@ -255,7 +261,8 @@ void loop()
 int menu() //This will hold the call for the menu: from this function 
 //each game will be called
 {
-  
+  int buttonY;
+  int buttonX;
   char * game1 = ">TIC-TAC-TOE";
   char * game2 = ">SNAKE";
   char * game3 = ">PONG";
@@ -267,30 +274,23 @@ int menu() //This will hold the call for the menu: from this function
   setStr(" SNAKE", 0, 22, BLACK);
   setStr(" PONG", 0, 32, BLACK);
   updateDisplay();
-  delay(1000);
-
-  //buttonX = analogRead(A2);
-  //buttonY =  analogRead(A1);
-  //int pressA = digitalRead(buttonA);
-  //Serial.println(buttonX);
- // Serial.println("Berofre y");
- // Serial.println(buttonY);
   //delay(1000);
 
   for(int i =0; ; i++)
   { 
     int pressA;
-    //buttonX = analogRead(A2);
-  buttonY =  analogRead(A1);
-  //int pressA = digitalRead(buttonA);
-  //Serial.println(buttonX);
-  //Serial.println("Berofre y");
-  //Serial.println(buttonY);
-    //delay(1000);
-    //Serial.println("Made it into for loop");
-    if(buttonY <500)
+    delay(200);
+    pressA = digitalRead(PIN_BUTTON_RIGHT);
+    if(pressA == LOW)
     {
-      delay(500);
+       return count;
+    }
+    
+    buttonY =  analogRead(A1);
+    Serial.println(buttonY);
+    if(buttonY <350)
+    {
+      //delay(500);
       Serial.println(count);
       if( count == 1)
       {
@@ -300,24 +300,16 @@ int menu() //This will hold the call for the menu: from this function
         setStr(game2, 0, 22, BLACK);
         setStr(" PONG", 0, 32, BLACK);
         updateDisplay();
-        delay(1000);
-        
-
+        //delay(1000);
         do
         {
-           Serial.println("MAde it in");
-           delay(500);
-           pressA = digitalRead(buttonA);
-           Serial.println(pressA);
-           
-          if(pressA == HIGH)
+           pressA = digitalRead(PIN_BUTTON_RIGHT); 
+          if(pressA == LOW)
           {
             return count;
           }
-
           buttonY =  analogRead(A1);
-          Serial.println(buttonY);
-        }while( (buttonY >= 500) && (buttonY <= 520));
+        }while( (buttonY >= 350) && (buttonY <= 400));
       }
       else if(count == 2)
       {
@@ -326,12 +318,19 @@ int menu() //This will hold the call for the menu: from this function
         setStr(" SNAKE", 0, 22, BLACK);
         setStr(game3, 0, 32, BLACK);
         updateDisplay();
-        delay(500);
-        pressA = digitalRead(buttonA);
-        if(pressA == HIGH)
+        //delay(1000);
+        do
         {
-          return count;
-        }  
+           pressA = digitalRead(PIN_BUTTON_RIGHT);
+           Serial.println(pressA);
+           
+          if(pressA == LOW)
+          {
+            return count;
+          }
+          buttonY =  analogRead(A1);
+          Serial.println(buttonY);
+        }while( (buttonY >= 350) && (buttonY <= 400));
       }
      else if(count == 3)
       {
@@ -341,17 +340,21 @@ int menu() //This will hold the call for the menu: from this function
         setStr(" PONG", 0, 32, BLACK);
         updateDisplay();
         //delay(1000);
-        pressA = digitalRead(buttonA);
-        if(pressA == HIGH)
+        do
         {
-          return count;
-        }
-      }
+           pressA = digitalRead(PIN_BUTTON_RIGHT); 
+          if(pressA == LOW)
+          {
+            return count;
+          }
+          buttonY =  analogRead(A1);
+        }while( (buttonY >= 350) && (buttonY <= 400));
+      } 
     }
 
-    else if (buttonY > 520)
+    else if (buttonY > 400)
     {
-      delay(500);
+      //delay(500);
       if( count == 1)
       {
         count = 3;
@@ -360,13 +363,18 @@ int menu() //This will hold the call for the menu: from this function
         setStr(game3, 0, 32, BLACK);
         updateDisplay();
         //delay(1000);
-        pressA = digitalRead(buttonA);
-        if(pressA == HIGH)
-        {
-          return count;
-        }
         
+        do
+        {
+           pressA = digitalRead(PIN_BUTTON_RIGHT); 
+          if(pressA == LOW)
+          {
+            return count;
+          }
+          buttonY =  analogRead(A1);
+        }while( (buttonY >= 350) && (buttonY <= 400));
       }
+      
       else if(count == 2)
       {
         count = 1;
@@ -375,13 +383,18 @@ int menu() //This will hold the call for the menu: from this function
         setStr(" PONG", 0, 32, BLACK);
         updateDisplay();
         //delay(1000);
-        pressA = digitalRead(buttonA);
-        if(pressA == HIGH)
-        {
-          return count;
-        }
         
+        do
+        {
+           pressA = digitalRead(PIN_BUTTON_RIGHT);
+          if(pressA == LOW)
+          {
+            return count;
+          }
+          buttonY =  analogRead(A1);
+        }while( (buttonY >= 350) && (buttonY <= 400));
       }
+      
       else if(count == 3)
       {
         count = 2;
@@ -390,15 +403,20 @@ int menu() //This will hold the call for the menu: from this function
         setStr(" PONG", 0, 32, BLACK);
         updateDisplay();
         //delay(1000);
-        pressA = digitalRead(buttonA);
-        if(pressA == HIGH)
+        do
         {
-          return count;
-        }
+           pressA = digitalRead(PIN_BUTTON_RIGHT);
+          if(pressA == LOW)
+          {
+            return count;
+          }
+          buttonY =  analogRead(A1);
+        }while( (buttonY >= 350) && (buttonY <= 400));
+      }
       }
     } 
   } 
-}
+
 void setPixel(int x, int y)
 {
   setPixel(x, y, BLACK); // Call setPixel with bw set to Black
