@@ -1,16 +1,28 @@
-<blockquote>
-  <p>Written with <a href="https://stackedit.io/">StackEdit</a>.</p>
-  
+
   <h1 id="ardunio-handheld-gaming-system">Ardunio-Handheld-Gaming-System</h1>
 </blockquote>
+
+<p>Contributors: <br>
+    Brayden, Brennen, Brooke <br>
+    
+    bclar686@gmail.com <br>
+    
+    Fall 2015</p>
 
 <p>License Information: <br>
   The license for this project is GNU GENERAL PUBLIC LICENSE. For more information please look under the License file.</p>
 
+<p>Overview: <br>
+  This project is to create a handheld gaming system using the Ardunio Uno. This program includes <br>
+    ~ Menu Function <br>
+    ~ Three games ( Snake, Pong, Tic-Tac-Toe) <br>
+    ~ Bluetooth connection between Ardunios (comming soon...) </p>
+
+
 <p>Hardware Used: <br>
   ~Arduino Uno <br>
   ~ Nokia 5110 LCD Screen <br>
-  ~Joystick Shield V2.4  <br>
+  ~Joystick Shield V2.4 from ElecFreaks.com  <br>
   ~BlueTooth Module HC-05</p>
 
 <p>Project Design:</p>
@@ -27,7 +39,7 @@
       -LED = 9    - Backlight LED</p>
 
 <p>~ JoyStick Shield Hookup <br>
-      Currently waiting for shields to arrive in the mail, will update once they are here!</p>
+      This shield provides very easy hookup. The shield simply connects straight into the ardunio board. It also has direct <br> connection for the Nokia 5110 screen, however it is slightly skewed to the side.</p>
 
 <p>~ Bluetooth Hookup <br>
       BHurl currently researching, will also update soon!</p>
