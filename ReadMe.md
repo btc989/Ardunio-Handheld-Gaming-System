@@ -39,13 +39,13 @@
       -LED = 9    - Backlight LED</p>
 
 <p>~ JoyStick Shield Hookup <br>
-      This shield provides very easy hookup. The shield simply connects straight into the ardunio board. It also has direct <br> connection for the Nokia 5110 screen, however it is slightly skewed to the side.</p>
+    This shield provides very easy hookup. The shield simply connects straight into the ardunio board. It also has direct <br>      connection for the Nokia 5110 screen, however it is slightly skewed to the side.</p>
 
 <p>~ Bluetooth Hookup <br>
       BHurl currently researching, will also update soon!</p>
 
-<p>~Installation Instructions:</p>
-      At the moment each game file is being seperatley built and tested. Once the games are running they will placed into <br>
-      the Master Code for easy download </p>
+<p>~Installation Instructions:<br>
+      At the moment each game file is being seperatley built and tested. Once the games are running<br> 
+      they will placed into the Master Code for easy download </p>
 <p>~Libaries Required: <br>
       Currently the only library planned is for the Tic-Tac-Toe game which is currently being built. </p>
