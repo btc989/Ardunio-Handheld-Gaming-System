@@ -44,7 +44,8 @@
 <p>~ Bluetooth Hookup <br>
       BHurl currently researching, will also update soon!</p>
 
-<p>Installation Instructions:</p>
-
+<p>~Installation Instructions:</p>
+      At the moment each game file is being seperatley built and tested. Once the games are running they will placed into <br>
+      the Master Code for easy download </p>
 <p>~Libaries Required: <br>
       Currently the only library planned is for the Tic-Tac-Toe game which is currently being built. </p>
