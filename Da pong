@@ -6,17 +6,18 @@
 #define PIN_DC    5
 #define PIN_SDIN  11
 #define PIN_SCLK  13
-
-#define LCD_C     LOW
-#define LCD_D     HIGH
-
-#define LCD_X     84
-#define LCD_Y     18
+//define screen pins
+#define cs 10
+#define dc 9
+#define rst 8
+#define TFTscreenWidth 160
+#define TFTscreenHeight 128
 
 //Enable bluetooth communication
 #include <SoftwareSerial.h>
-//LCD libraries 
-#include <LCD-Map.h>
+//TFT libraries 
+#include <TFT.h>  // Arduino LCD library
+#include <SPI.h>
 //Set up the first bluetooth port(port values may interchange)
 int BluetoothPort1 = 13;
 int BluetoothPort2 = 12;
@@ -29,15 +30,16 @@ int ballPerimeter = 4;
 unsigned int bar1X = 0;
 unsigned int bar1Y = 0;
 unsigned int bar2X = 0;
-unsigned int bar2Y = LCD_Y * 8 - barHeight;
+unsigned int bar2Y = TFTscreen.height() * 8 - barHeight;
 int ballX = 0;
 int ballY = 0;
 boolean isBallUp = false;
 boolean isBallRight = true;
 //Gameplay Visual information
-byte pixels[LCD_X][LCD_Y];
+byte pixels[TFTscreen.width()][TFTscreen.height()];
 unsigned long lastRefreshTime;
 const int refreshInterval = 150;
+TFT TFTscreen = TFT(cs, dc, rst);
 //Game data information
 byte gameState = 1;
 byte ballSpeed = 2;
@@ -45,12 +47,64 @@ byte player1WinCount = 0;
 byte player2WinCount = 0;
 byte hitCount = 0;
 
+//Determines which reciever is which
+void BtSetCmdMode(int i_cmdMode = 1){
+    //Debug text
+    Serial.print("BtSetCmdMode ");    
+    Serial.println(i_cmdMode);    
+  BtReset();
+  //If a one is sent,set this receiver as master
+  BTSerial.begin((1 == i_cmdMode)?38400:57600);//57600
+}
+
+//Set up master and slave receiver
+void BtSetupRole(int i_isMaster = 1){
+  BTSerial.begin(38400);
+  BtSetCmdMode(1);
+  BTSerial.println("AT");
+  delay(1000);
+  BTSerial.println("AT+UART=57600,0,0");
+  delay(1000);
+  //Debug to determine slave and master drivers have been set up correctly
+  if(0 == i_isMaster){
+    BTSerial.println("AT+ROLE=0");
+    Serial.println("Set as Slave");
+  } else {
+    BTSerial.println("AT+ROLE=1");
+    Serial.println("Set as Master");
+  }
+  delay(1000); 
+
+  BtSetCmdMode(0); 
+}
+
+void BtStartMaster(void){
+  BtSetCmdMode(1);
+  
+  BTSerial.println("AT+INIT");
+  Serial.println("AT command: AT+INIT");
+  delay(500); 
+  BTSerial.println("AT+LINK=13,3,191407");
+  Serial.println("AT command: AT+LINK=");
+  delay(100); 
+
+  BtSetCmdMode(0);
+}
 void setup(){
   Serial.begin(9600);
-  //Set up visual information
-  LcdInitialise();
+  //Set up screen using TF
+  TFTscreen.begin()
+  TFTscreen.background(0,0,0);//set screen background to black
+  //Make sure there is no Bluetooth info accidently stored
+  BTComunication.flush();
   //Set game to in game state
   restartGame();
+   if(1 == gIsMaster){
+   BtSetupRole(1);
+   BtStartMaster();
+ }else{
+   BtSetupRole(0);
+ } 
 }
 
 void loop(){
@@ -77,8 +131,8 @@ void restartGame(){
 
 void refreshScreen(){
   if(gameState == 1){
-    for(int y = 0; y < LCD_Y; y++){
-        for(int x = 0; x < LCD_X; x++){
+    for(int y = 0; y <TFTscreen.height(); y++){
+        for(int x = 0; x < TFTscreen.width(); x++){
            byte pixel = 0x00;
            int realY = y * 8;
            // draw ball if in the frame
@@ -112,7 +166,7 @@ void refreshScreen(){
              }
              pixel = pixel | barMask;
            }
-           LCDWrite(LCD_D, pixel);
+           LCDWrite(LCD_D, pixel);//get rid of this when I figure out how
          }
     }
   } else if(gameState == 2){
@@ -122,7 +176,7 @@ void refreshScreen(){
 
 void update(){
   if(gameState == 1){
-     int barMargin = LCD_X - barWidth;
+     int barMargin = TFTscreen.()width - barWidth;
      //Input for player
      int pot1 = analogRead(A0); 
     //values for analog movement(P1)
@@ -150,9 +204,9 @@ void update(){
        isBallRight = true;
        ballX = 0;
      }
-     else if(ballX > LCD_X - ballPerimeter - 1){
+     else if(ballX > TFTscreenWidth - ballPerimeter - 1){
        isBallRight = false;
-       ballX = LCD_X - ballPerimeter;
+       ballX = TFTscreen.width() - ballPerimeter;
      }
      //Makes sure that the ball does not go past vertical axis 
      if(ballY < barHeight){
@@ -170,14 +224,14 @@ void update(){
          player2WinCount++;
        }
      }
-     if(ballY + ballPerimeter > LCD_Y * 8 - barHeight){
+     if(ballY + ballPerimeter > TFTscreen.height() * 8 - barHeight){
        if(ballX + ballPerimeter >= bar2X && ballX <= bar2X + barWidth){ //ball bounces from bar2
          isBallUp = true; 
          if(ballX + ballPerimeter/2 < bar2X + barWidth/2)
            isBallRight = false;
          else
            isBallRight = true;
-         ballY = LCD_Y * 8 - barHeight - ballPerimeter;
+         ballY = TFTscreen.height() * 8 - barHeight - ballPerimeter;
          if(++hitCount % 10 == 0 && ballSpeed < 5) 
            ballSpeed++;
        }else{ // player 1 wins
@@ -187,32 +241,11 @@ void update(){
      }
   }else if(gameState == 2){
       for(int i =0; i < 4; i++){
-        LCDWrite(LCD_C, 0x0D );  // LCD in inverse mode.
+        LCDWrite(LCD_C, 0x0D );  // get rid of this
         delay(300);
-        LCDWrite(LCD_C, 0x0C );  // LCD in inverse mode.
+        LCDWrite(LCD_C, 0x0C );  //get rid of this 
         delay(300);
       }
       restartGame();
   }  
-}
-
-void LcdInitialise(void){
-  pinMode(PIN_SCE, OUTPUT);
-  pinMode(PIN_RESET, OUTPUT);
-  pinMode(PIN_DC, OUTPUT);
-  pinMode(PIN_SDIN, OUTPUT);
-  pinMode(PIN_SCLK, OUTPUT);
-  delay(200);
-  digitalWrite(PIN_RESET, LOW);
-  delay(500);
-  digitalWrite(PIN_RESET, HIGH);
-  LCDWrite(LCD_C, 0x21 );  // LCD Extended Commands.
-  LCDWrite(LCD_C, 0xB1 );  // Set LCD Vop (Contrast). 
-  LCDWrite(LCD_C, 0x04 );  // Set Temp coefficent. //0x04
-  LCDWrite(LCD_C, 0x14 );  // LCD bias mode 1:48. //0x13
-  LCDWrite(LCD_C, 0x0C );  // LCD in normal mode.
-  LCDWrite(LCD_C, 0x20 );
-  LCDWrite(LCD_C, 0x80 ); //select X Address 0 of the LCD Ram
-  LCDWrite(LCD_C, 0x40 ); //select Y Address 0 of the LCD Ram - Reset is not working for some reason, so I had to set these addresses
-  LCDWrite(LCD_C, 0x0C );
 }
