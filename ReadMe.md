@@ -48,4 +48,7 @@
       At the moment each game file is being seperatley built and tested. Once the games are running<br> 
       they will placed into the Master Code for easy download </p>
 <p>~Libaries Required: <br>
-      Currently the only library planned is for the Tic-Tac-Toe game which is currently being built. </p>
+      If using the Nokia 5110 screen you will need to download both the Adafruit-PCD8544-Nokia-5110-LCD library. <br>
+      and the Adafruit-GFX-Library-master library. Links both listed here: <br>
+      https://github.com/adafruit/Adafruit-PCD8544-Nokia-5110-LCD-library.git <br>
+      https://github.com/adafruit/Adafruit-GFX-Library.git </p>
