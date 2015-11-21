@@ -494,7 +494,7 @@ s:
       {
         goto sto;
       }
-      RandomMoves(x, y, b);
+      RandomMoves(b);
       Printarray(b);
       ans = EndGame(b);
     }
@@ -777,13 +777,14 @@ done:
   
 }
 
-void RandomMoves( int& x, int& y, char board[][3] )
+void RandomMoves( char board[][3] )
 {
-  x = random(3); //Finds first random values of x and y between 1 and 3
-  y = random(3);
+  int x = random(3); //Finds first random values of x and y between 1 and 3
+  int y = random(3);
   
-  while ((board[x][y] == 'X') || ( board[x - 1][y - 1] == 'Y')) // If there is already a letter there it will enter loop
+  while ((board[x][y] == 'X') || ( board[x][y] == 'O')) // If there is already a letter there it will enter loop
   {
+    
     x = random(3); //It will keep looping until a new place is found without a letter
     y = random(3);
   }
@@ -876,6 +877,11 @@ char EndGame(char b[][3]) // returns a t for tie, c for continue, 1 for player 1
   }
   else if(tieTest) //Tests the previous set bool to check if a tie has been made
   {
+    return tie;
+  }
+  else  //If no other conditions return first then the game can continue
+    return cont;//there is no win. 
+}
     return tie;
   }
   else  //If no other conditions return first then the game can continue
