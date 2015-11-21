@@ -100,7 +100,7 @@ void movesnake(int& foodX, int& foodY)
     {
       headY = headY + 1;
       headX = headX;
-    } while ((digitalRead(PIN_BUTTON_RIGHT) == HIGH) || (digitalRead(PIN_BUTTON_DOWN) == HIGH) || (digitalRead(PIN_BUTTON_LEFT) == HIGH));
+    } while (digitalRead(PIN_BUTTON_UP) == HIGH);
     }
    else if(digitalRead(PIN_BUTTON_RIGHT) == LOW)
     {
@@ -108,7 +108,7 @@ void movesnake(int& foodX, int& foodY)
     {
       headX = headX - 1;
       headY = headY;
-    } while ((digitalRead(PIN_BUTTON_UP) == HIGH) || (digitalRead(PIN_BUTTON_DOWN) == HIGH) || (digitalRead(PIN_BUTTON_LEFT) == HIGH));
+    } while(digitalRead(PIN_BUTTON_RIGHT) == HIGH);
     }
    else if(digitalRead(PIN_BUTTON_DOWN) == LOW)
     {
@@ -116,7 +116,8 @@ void movesnake(int& foodX, int& foodY)
     {
       headY = headY - 1;
       headX = headX;
-    } while ((digitalRead(PIN_BUTTON_RIGHT) == HIGH) || (digitalRead(PIN_BUTTON_UP) == HIGH) || (digitalRead(PIN_BUTTON_LEFT) == HIGH));
+      delay(50);
+    } while(digitalRead(PIN_BUTTON_DOWN) != HIGH);
     }
    else if(digitalRead(PIN_BUTTON_LEFT) == LOW)
     {
@@ -124,7 +125,7 @@ void movesnake(int& foodX, int& foodY)
     {
       headX = headX + 1;
       headY= headY;
-    } while ((digitalRead(PIN_BUTTON_RIGHT) == HIGH) || (digitalRead(PIN_BUTTON_DOWN) == HIGH) || (digitalRead(PIN_BUTTON_UP) == HIGH));
+    } while(digitalRead(PIN_BUTTON_LEFT) == HIGH);
     }
 
      TFTscreen.fill(255, 255, 255); 
@@ -201,3 +202,4 @@ bool eat(int& foodX, int& foodY, int& headX, int& headY)
     oldheadX = bodyX;
     oldheadY = bodyY; // pairs the old body and the new head
     }
+
