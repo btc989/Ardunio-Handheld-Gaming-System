@@ -9,9 +9,9 @@
 #define TFTscreenHeight 128
 
 const byte PIN_BUTTON_RIGHT = 3;
-const byte PIN_BUTTON_UP = 4;
-const byte PIN_BUTTON_DOWN = 5;
-const byte PIN_BUTTON_LEFT = 6;
+const byte PIN_BUTTON_UP = 2;
+const byte PIN_BUTTON_DOWN = 4;
+const byte PIN_BUTTON_LEFT = 5;
 
 const byte PIN_ANALOG_X = 0;
 const byte PIN_ANALOG_Y = 1;
@@ -61,6 +61,8 @@ void loop()
   int foodY;
   int headX;
   int headY;
+  int moveX;
+  int moveY;
   if (millis() % Speed < 2) 
   {
     food(  foodX, foodY);
@@ -69,15 +71,19 @@ void loop()
 }
 void beginSnake()
 {
-  if (headX > TFTscreen.width() || headX < 0) 
+  headX = 64;
+  headY = 60;
+  TFTscreen.rect(headX, headY, 4, 4);
+  
+  if (headX > TFTscreen.width() + 4 || headX < 4) 
     {
       headX = 0;
     }
-    if (headY > TFTscreen.height() || headY < 0) 
+    if (headY > TFTscreen.height() + 4 || headY < 4) 
     {                                           // makes sure the head doesnt pass the wall
       headY = 0;
     }
-    TFTscreen.rect(headX, headY, 4, 4);
+    TFTscreen.rect(64, 60, 4, 4);
     TFTscreen.fill(0, 0, 0); // makes the head black
     
 }
@@ -88,9 +94,38 @@ void movesnake(int& foodX, int& foodY)
   {
      int myWidth = TFTscreen.width();
      int myHeight = TFTscreen.height(); // sets screen dimentions
-
-     headX = map(analogRead(A0), 0, 1023, 32, myWidth) - 20 ;
-     headY = map(analogRead(A1), 0, 1023, 6, myHeight) - 5 ; // sets positon of snake head and pairs it with joystick
+    if(digitalRead(PIN_BUTTON_UP) == LOW)
+    {
+    do 
+    {
+      headY = headY + 1;
+      headX = headX;
+    } while ((digitalRead(PIN_BUTTON_RIGHT) == HIGH) || (digitalRead(PIN_BUTTON_DOWN) == HIGH) || (digitalRead(PIN_BUTTON_LEFT) == HIGH));
+    }
+   else if(digitalRead(PIN_BUTTON_RIGHT) == LOW)
+    {
+    do 
+    {
+      headX = headX - 1;
+      headY = headY;
+    } while ((digitalRead(PIN_BUTTON_UP) == HIGH) || (digitalRead(PIN_BUTTON_DOWN) == HIGH) || (digitalRead(PIN_BUTTON_LEFT) == HIGH));
+    }
+   else if(digitalRead(PIN_BUTTON_DOWN) == LOW)
+    {
+    do 
+    {
+      headY = headY - 1;
+      headX = headX;
+    } while ((digitalRead(PIN_BUTTON_RIGHT) == HIGH) || (digitalRead(PIN_BUTTON_UP) == HIGH) || (digitalRead(PIN_BUTTON_LEFT) == HIGH));
+    }
+   else if(digitalRead(PIN_BUTTON_LEFT) == LOW)
+    {
+    do 
+    {
+      headX = headX + 1;
+      headY= headY;
+    } while ((digitalRead(PIN_BUTTON_RIGHT) == HIGH) || (digitalRead(PIN_BUTTON_DOWN) == HIGH) || (digitalRead(PIN_BUTTON_UP) == HIGH));
+    }
 
      TFTscreen.fill(255, 255, 255); 
   
@@ -122,7 +157,7 @@ void movesnake(int& foodX, int& foodY)
     //Serial.println("FLyffy bunny");
     //Serial.println(randoY);
   
-    TFTscreen.rect(randoX, randoY, 4, 4);
+    TFTscreen.rect(randoX, randoY, 2, 2);
     TFTscreen.fill (0, 0, 0);
   }
 
@@ -132,7 +167,7 @@ bool eat(int& foodX, int& foodY, int& headX, int& headY)
   Serial.println(headX);
   Serial.println("Next");
   Serial.println(foodX);
-  if (((headX == foodX) && (headY == foodY))) 
+  if ((headX == foodX) && (headY == foodY))
   {
     Serial.println("MWHAHA");
     int score = (score + 1);
@@ -147,9 +182,13 @@ bool eat(int& foodX, int& foodY, int& headX, int& headY)
 
     void bod()
     {
-
-    TFTscreen.rect(bodyX, bodyY, 4, 4);
+      if(score = score + 1)
+      {
+  int bodyX = bodyX + 1;
+  int bodyY = bodyY + 1;
+    TFTscreen.rect(headX - 4, headY - 4, 4, 4);
     TFTscreen.fill(0, 0, 0); // makes the body black
+      }
     
        if (oldbodyX != bodyX || oldbodyY != bodyY) 
     {
