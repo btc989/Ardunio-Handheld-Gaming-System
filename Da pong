@@ -1,6 +1,14 @@
 //Code origin:https://github.com/monur/Arduino-Uno-PCD8544-Pong/blob/master/Pong.ino
 //Bluetooth refrence: https://github.com/pcantin/bt2bt_HCa/blob/master/bt2bt_HCa.ino
 
+#include <SPI.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_PCD8544.h>
+//Set up 
+
+#define screenHeight 48
+#define screenHeight 84
+
 #define PIN_SCE   7
 #define PIN_RESET 6
 #define PIN_DC    5
@@ -10,14 +18,9 @@
 #define cs 10
 #define dc 9
 #define rst 8
-#define TFTscreenWidth 160
-#define TFTscreenHeight 128
 
 //Enable bluetooth communication
 #include <SoftwareSerial.h>
-//TFT libraries 
-#include <TFT.h>  // Arduino LCD library
-#include <SPI.h>
 //Set up the first bluetooth port(port values may interchange)
 int BluetoothPort1 = 13;
 int BluetoothPort2 = 12;
@@ -30,23 +33,22 @@ int ballPerimeter = 4;
 unsigned int bar1X = 0;
 unsigned int bar1Y = 0;
 unsigned int bar2X = 0;
-unsigned int bar2Y = TFTscreen.height() * 8 - barHeight;
+unsigned int bar2Y = screenHeight * 8 - barHeight;
 int ballX = 0;
 int ballY = 0;
 boolean isBallUp = false;
 boolean isBallRight = true;
 //Gameplay Visual information
-byte pixels[TFTscreen.width()][TFTscreen.height()];
+byte pixels[screenHeight][screenHeight];
 unsigned long lastRefreshTime;
 const int refreshInterval = 150;
-TFT TFTscreen = TFT(cs, dc, rst);
 //Game data information
 byte gameState = 1;
 byte ballSpeed = 2;
 byte player1WinCount = 0;
 byte player2WinCount = 0;
 byte hitCount = 0;
-
+SoftwareSerial BTSerial(BluetoothPort1, BluetoothPort2);
 //Determines which reciever is which
 void BtSetCmdMode(int i_cmdMode = 1){
     //Debug text
@@ -78,6 +80,25 @@ void BtSetupRole(int i_isMaster = 1){
   BtSetCmdMode(0); 
 }
 
+void BtReset(void){
+    Serial.println("BtReset");    
+  BTSerial.flush();
+  delay(500);
+  
+  //Method 1: Using the power
+  digitalWrite(gPowerPin, LOW);  
+  delay(2000); 
+  digitalWrite(gPowerPin, HIGH);
+  
+/*
+  //Method 2: Using the reset pin
+  digitalWrite(gResetPin, LOW);
+  delay(2000);
+  digitalWrite(gResetPin, HIGH);
+  */
+  delay(500);
+}
+
 void BtStartMaster(void){
   BtSetCmdMode(1);
   
@@ -93,8 +114,11 @@ void BtStartMaster(void){
 void setup(){
   Serial.begin(9600);
   //Set up screen using TF
-  TFTscreen.begin()
-  TFTscreen.background(0,0,0);//set screen background to black
+   display.begin();
+  display.clearDisplay();
+  display.setContrast(70);
+  display.setTextSize(1);
+  display.setTextColor(BLACK);
   //Make sure there is no Bluetooth info accidently stored
   BTComunication.flush();
   //Set game to in game state
@@ -131,8 +155,8 @@ void restartGame(){
 
 void refreshScreen(){
   if(gameState == 1){
-    for(int y = 0; y <TFTscreen.height(); y++){
-        for(int x = 0; x < TFTscreen.width(); x++){
+    for(int y = 0; y <screenHeight ; y++){
+        for(int x = 0; x < screenHeight; x++){
            byte pixel = 0x00;
            int realY = y * 8;
            // draw ball if in the frame
@@ -166,7 +190,6 @@ void refreshScreen(){
              }
              pixel = pixel | barMask;
            }
-           LCDWrite(LCD_D, pixel);//get rid of this when I figure out how
          }
     }
   } else if(gameState == 2){
@@ -176,7 +199,7 @@ void refreshScreen(){
 
 void update(){
   if(gameState == 1){
-     int barMargin = TFTscreen.()width - barWidth;
+     int barMargin = screenHeight - barWidth;
      //Input for player
      int pot1 = analogRead(A0); 
     //values for analog movement(P1)
