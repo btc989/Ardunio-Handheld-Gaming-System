@@ -24,8 +24,12 @@
 //Set up the first bluetooth port(port values may interchange)
 int BluetoothPort1 = 13;
 int BluetoothPort2 = 12;
+int gPowerPin = 14;
+int gIsMaster = 0;
+
 //Set up serial comunication
 SoftwareSerial BTComunication(BluetoothPort1,BluetoothPort2);
+Adafruit_PCD8544 display = Adafruit_PCD8544(13, 11, 5, 7, 6);
 //ball and pong paddle information
 int barWidth = 16;
 int barHeight = 4;
@@ -38,6 +42,10 @@ int ballX = 0;
 int ballY = 0;
 boolean isBallUp = false;
 boolean isBallRight = true;
+const byte PIN_ANALOG_X = 0; 
+const byte PIN_ANALOG_Y = 1; 
+
+
 //Gameplay Visual information
 byte pixels[screenHeight][screenHeight];
 unsigned long lastRefreshTime;
@@ -113,8 +121,10 @@ void BtStartMaster(void){
 }
 void setup(){
   Serial.begin(9600);
+
+  randomSeed(analogRead(4));
   //Set up screen using TF
-   display.begin();
+  display.begin();
   display.clearDisplay();
   display.setContrast(70);
   display.setTextSize(1);
@@ -167,7 +177,7 @@ void refreshScreen(){
                if(i < ballPerimeter)
                  ballMask = 0x80 | ballMask;
              }
-             pixel = pixel | ballM0ask;
+             pixel = pixel | ballMask;
            }
            
            // draw bars if in the frame
@@ -201,17 +211,18 @@ void update(){
   if(gameState == 1){
      int barMargin = screenHeight - barWidth;
      //Input for player
-     int pot1 = analogRead(A0); 
-    //values for analog movement(P1)
-     if (pot1 == [0,200]){
-      bar1 +=1; 
-     }
-     if (pot1 == [201,400]){
-      bar1 -=1;
-     }
+     int pot1 = analogRead(PIN_ANALOG_X); 
+     int pot2 = analogRead(PIN_ANALOG_X);
+   if(1 == gIsMaster){
+     bar1X = pot1 / 2 * screenHeight / 512;
+ }else{
+     bar2X = pot2 / 2 * screenHeight / 512;
+ } 
+    
      
     //prevent player one from moving up
-     if(bar1 > barMargin) bar1 = barMargin;
+     if(bar1X > barMargin) bar1X = barMargin;
+     if(bar2X > barMargin) bar2X = barMargin;
      //Vertical Ball control
      if(isBallUp)
        ballY -= ballSpeed;
@@ -227,9 +238,9 @@ void update(){
        isBallRight = true;
        ballX = 0;
      }
-     else if(ballX > TFTscreenWidth - ballPerimeter - 1){
+     else if(ballX > screenHeight - ballPerimeter - 1){
        isBallRight = false;
-       ballX = TFTscreen.width() - ballPerimeter;
+       ballX = screenHeight - ballPerimeter;
      }
      //Makes sure that the ball does not go past vertical axis 
      if(ballY < barHeight){
@@ -247,14 +258,14 @@ void update(){
          player2WinCount++;
        }
      }
-     if(ballY + ballPerimeter > TFTscreen.height() * 8 - barHeight){
+     if(ballY + ballPerimeter > screenHeight * 8 - barHeight){
        if(ballX + ballPerimeter >= bar2X && ballX <= bar2X + barWidth){ //ball bounces from bar2
          isBallUp = true; 
          if(ballX + ballPerimeter/2 < bar2X + barWidth/2)
            isBallRight = false;
          else
            isBallRight = true;
-         ballY = TFTscreen.height() * 8 - barHeight - ballPerimeter;
+         ballY = screenHeight * 8 - barHeight - ballPerimeter;
          if(++hitCount % 10 == 0 && ballSpeed < 5) 
            ballSpeed++;
        }else{ // player 1 wins
@@ -264,11 +275,12 @@ void update(){
      }
   }else if(gameState == 2){
       for(int i =0; i < 4; i++){
-        LCDWrite(LCD_C, 0x0D );  // get rid of this
+        //LCDWrite(LCD_C, 0x0D );  // get rid of this
         delay(300);
-        LCDWrite(LCD_C, 0x0C );  //get rid of this 
+        //LCDWrite(LCD_C, 0x0C );  //get rid of this 
         delay(300);
       }
       restartGame();
   }  
 }
+
