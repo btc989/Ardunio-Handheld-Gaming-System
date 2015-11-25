@@ -73,6 +73,17 @@ const byte PIN_ANALOG_Y = 1;
 #define YPOS 1
 #define DELTAY 2
 
+/*****For Snake*****/
+int screenheight = 48;
+int screenwidth = 84;
+int direction=0;
+const int size = 25;
+int layout[size];
+int bodyX[size];
+int bodyY[size];
+
+/**********/
+
 void setup()
 {
   Serial.begin(9600);
@@ -91,7 +102,9 @@ void setup()
   display.setCursor(12,14);
   display.println("B3 SYSTEMS");
   display.display();
-  delay(2000);   
+  delay(2000);
+  
+  
 }
 
 void loop()
@@ -102,8 +115,10 @@ void loop()
   int buttonX = analogRead(PIN_ANALOG_X);
   int buttonY =  analogRead(PIN_ANALOG_Y);
   choice = menu(); //menu function call
+  Serial.println("Made it back to menu");
   display.clearDisplay();
   display.display();
+  Serial.println(choice);
   if (choice == 1)
   {
     TicTacToe();
@@ -113,9 +128,13 @@ void loop()
       EtchASketch();
     
   }
-  else
+  else if(choice == 3)
   {
     Pong();
+  }
+  else
+  {
+    Snake();
   }
   
 }
@@ -128,7 +147,7 @@ int menu() //This will hold the call for the menu: from this function
   char * game1 = ">TIC-TAC-TOE";
   char * game2 = ">ETCH-A-SKETCH";
   char * game3 = ">PONG";
-  int count = 3;
+  int count = 4;
 
   display.clearDisplay();
   display.display();
@@ -218,6 +237,28 @@ int menu() //This will hold the call for the menu: from this function
         } while ( pressup !=LOW || pressdown != LOW);
       }
       else if (count == 3)
+      {
+        count = 4;
+        display.clearDisplay();
+        display.setCursor(12,0);
+        display.println("Game Menu");
+        display.setCursor(0,12);
+        display.println(">SNAKE");
+        display.display();
+
+        do
+        {
+          pressA = digitalRead(PIN_BUTTON_RIGHT);
+          if (pressA == LOW)
+          {
+            return count;
+          }
+          //buttonY =  analogRead(A1);
+          pressup = digitalRead(PIN_BUTTON_UP);
+          pressdown = digitalRead(PIN_BUTTON_DOWN);
+        } while ( pressdown != LOW || pressup != LOW);
+      }
+       else if (count == 4)
       {
         count = 1;
         display.clearDisplay();
@@ -367,72 +408,254 @@ boolean inPaddle(int x, int y, int rectX, int rectY, int rectWidth, int rectHeig
   return result;
 }
 
-void EtchASketch()
-{  
-  int pointX=30;
-  int pointY=30; 
-  int oldpointx=30;
-  int oldpointy=30;
-  int pressup;
-  int pressdown;
-  pressup = digitalRead(PIN_BUTTON_UP);
-  pressdown = digitalRead(PIN_BUTTON_DOWN);
-  while ( pressdown != LOW || pressup != LOW) 
-  {
-      int buttonY = analogRead(1);
-      int buttonX = analogRead(0); // reads the joystick values
-      delay(50);
+void Snake()
+{   
+     display.setContrast(65);
+     byte RIGHT = 3;
+     byte UP = 2;
+     byte DOWN = 4;
+     byte LEFT = 5;
+    layout[0]=1;
+    bodyX[0]=20;
+    bodyY[0]=20;
+    for(int i =1; i<size; i++)
+    {
+      layout[i]=0;
+      bodyX[i]=0;
+      bodyY[i]=0; 
+    }
+    int headxpos=20;
+    int headypos=20;
+    int foodx=0;
+    int foody=0;
+    int food = 0;
+    int olddx;
+    int olddy;
+    bool running;
+    running = true;
+    
+    generateFood(foodx,foody);
+    while (running) 
+    {
+        // If a key is pressed
+        //int pressA = digitalRead(UP);
+        int buttonY =  analogRead(A1);
+        int buttonX =  analogRead(A0);
+        //Serial.println(buttonX);
+        //Serial.println("NEXT");
+        //Serial.println(buttonY);
         if (buttonY <300 )
         {
-            pointY++;
-        }
+            direction = 0;
+         }
+        //int pressB = digitalRead(RIGHT);
         if (buttonX >400)
         {
-          pointX++;
+          direction = 1;
         }
+        //int pressC = digitalRead(DOWN);
         if (buttonY> 400)
         {
-          pointY--;
+          direction = 2;
          }
+         //int pressD = digitalRead(LEFT);
         if (buttonX <300)
         {
-          pointX--;  
+          direction = 3;  
         }
-        
-        if (pointY > display.height() )
-        {
-            pointY= display.height()-2;
-        }
-        if (pointY < 0)  
-        {
-          pointY = 2; 
-        }
-        if (pointX > display.width()) 
-        {
-            pointX = display.width()-2;
-        }
-        if(pointX < 0)
-        {
-          pointX = 2; 
-        }
-      if(oldpointx!=pointX || oldpointy != pointY)
-      {
-        
-          display.drawPixel(pointX, pointY, BLACK);
-          display.display();
-        
-      }
-      if (digitalRead(PIN_BUTTON_RIGHT) == LOW) 
-      {
-        display.clearDisplay();
-        display.display();
-       }
-       oldpointx=pointX;
-       oldpointy=pointY;
-       pressup = digitalRead(PIN_BUTTON_UP);
-       pressdown = digitalRead(PIN_BUTTON_DOWN);
-  }
+        //Serial.println(direction);
+        update( headxpos, headypos, food, running, foodx, foody, olddx, olddy);
+        //Serial.println("We made it back");
+        delay(100);
+    }
+
+    display.clearDisplay();
+    display.display();
+    display.setCursor(12,0);
+    display.println("Game over!");
+    display.setCursor(0,22);
+    display.println("Your score is: ");
+    display.setCursor(39,35);
+    display.println(food);
+    display.display();
+    delay(4000);
 }
+
+// Updates the map
+void update( int& headxpos, int& headypos, int& food, bool& running,  int& foodx, int& foody, int& olddx, int& olddy) 
+{
+    // Move in direction indicated
+    if(direction == 3)
+    {
+         move(-1, 0, headxpos, headypos, food, running,foodx,foody, olddx, olddy);
+    }
+    else if(direction==0)
+    {
+       move(0, 1,headxpos, headypos,food,running,foodx,foody, olddx, olddy);
+    }
+    else if(direction==1)
+    {
+      move(1, 0, headxpos, headypos,food,running,foodx,foody, olddx, olddy);
+    }
+    else if(direction==2)
+    {
+      move(0, -1,headxpos, headypos,food,running, foodx,foody, olddx, olddy);
+    }
+}
+// Moves snake head to new location
+void move(int dx, int dy, int& headxpos,int& headypos,  int& food,bool& running, int& foodX, int& foodY, int& olddx, int& olddy) 
+{
+    // determine new head position
+    int newx = headxpos + dx;
+    int newy = headypos + dy;
+
+    if (newy > display.height() )
+    {
+      newy= -newy;
+    }
+    if (newy < 0)  
+    {
+      newy = -newy ; 
+    }
+
+    if (newx > display.width()) 
+    {
+      newx= -newx;
+    }
+
+    if(newx < 0)
+    {
+      newx = -newx; 
+    }
+    
+    bodyX[0]=newx;
+    bodyY[0]=newy;
+    display.clearDisplay();
+    display.display();
+    display.drawPixel(foodX, foodY, BLACK);
+    display.drawPixel(headxpos, headypos, WHITE);
+    display.drawPixel(bodyX[0], bodyY[0], BLACK);
+     
+    display.display();
+    for(int i = size-1; i>0; i--)
+    {
+      if(bodyX[i]!=0)
+      {
+        if(i==1)
+        {
+          Serial.println("In one body");
+          if(dx==-1 && dy==0)
+          {
+            bodyX[i]=headxpos + dx -i;
+            bodyY[i]=headypos + dy;
+            display.drawPixel(bodyX[i], bodyY[i], BLACK);
+            display.display();
+          }
+          else if(dx==0 && dy==1)
+          {
+            bodyX[i]=headxpos + dx;
+            bodyY[i]=headypos + dy+i;
+            display.drawPixel(bodyX[i], bodyY[i], BLACK);
+            display.display();
+          }
+          else if(dx==1 && dy==0)
+          {
+            bodyX[i]=headxpos + dx +i;
+            bodyY[i]=headypos + dy;
+            display.drawPixel(bodyX[i], bodyY[i], BLACK);
+            display.display();
+          }
+          if(dx==0 && dy==-1)
+          {
+            bodyX[i]=headxpos + dx ;
+            bodyY[i]=headypos + dy-i;
+            display.drawPixel(bodyX[i], bodyY[i], BLACK);
+            display.display();
+          }
+        }
+        else
+        {
+            Serial.println("In body p2");
+            Serial.println(i);
+            bodyX[i]=bodyX[i-1];
+            bodyY[i]=bodyY[i-1];
+            display.drawPixel(bodyX[i], bodyY[i], BLACK);
+            display.display(); 
+        } 
+      }
+    }
+
+    if(food>5)
+    {
+      for(int i = size-1; i>0; i--)
+      {
+        if(bodyX[i]!=0)
+        {
+          if(newx == bodyX[i])
+          {
+            if(newy == bodyY[i])
+            {
+                Serial.println(i);
+                Serial.println("In ending loop");
+                //running = false;
+                //return;
+            }
+          }  
+          break;
+        }
+      }
+    }
+    //Serial.println(bodyX[0]);
+    //Serial.println(foodX);
+    if(bodyX[0]==foodX)
+    {
+      if(bodyY[0]==foodY)
+      {
+        display.drawPixel(foodY, foodX, WHITE);
+        display.display();
+        food++;
+        if(food+1==size)
+        {
+          running=false;
+          display.clearDisplay();
+          display.display();
+          display.setCursor(12,0);
+          display.println("You Win!");
+          delay(4000);
+          return;
+        }
+        //if(food==1)
+        //{
+           layout[food]=1;
+           bodyX[food]=headxpos + dx+1;
+           bodyY[food]=headypos + dy+1;
+       // }
+        //else
+        //{
+          //layout[food]=1;
+          //bodyX[food]=headxpos + dx+1;
+          //bodyY[food]=headypos + dy+1;
+        //}
+        generateFood(foodX,foodY);
+      }
+    }
+   
+    // Move head to new location
+    olddx=foodX;
+    olddy=foodY;
+    headxpos = newx;
+    headypos = newy;
+}
+// Generates new food on map
+void generateFood(int& foodx, int& foody) 
+{
+    //Serial.println("Made it into generate food");
+    foodx = random(83); // Generate random x and y values within the map
+    foody = random(46);
+    display.drawPixel(foodx, foody, BLACK);
+    display.display();      
+}
+
 
 void TicTacToe()
 {
@@ -981,4 +1204,71 @@ char EndGame(char b[][3]) // returns a t for tie, c for continue, 1 for player 1
   }
   else  //If no other conditions return first then the game can continue
     return cont;//there is no win. 
+}
+
+void EtchASketch()
+{  
+  int pointX=30;
+  int pointY=30; 
+  int oldpointx=30;
+  int oldpointy=30;
+  int pressup;
+  int pressdown;
+  pressup = digitalRead(PIN_BUTTON_UP);
+  pressdown = digitalRead(PIN_BUTTON_DOWN);
+  while ( pressdown != LOW || pressup != LOW) 
+  {
+      int buttonY = analogRead(1);
+      int buttonX = analogRead(0); // reads the joystick values
+      delay(50);
+        if (buttonY <300 )
+        {
+            pointY++;
+        }
+        if (buttonX >400)
+        {
+          pointX++;
+        }
+        if (buttonY> 400)
+        {
+          pointY--;
+         }
+        if (buttonX <300)
+        {
+          pointX--;  
+        }
+        
+        if (pointY > display.height() )
+        {
+            pointY= display.height()-2;
+        }
+        if (pointY < 0)  
+        {
+          pointY = 2; 
+        }
+        if (pointX > display.width()) 
+        {
+            pointX = display.width()-2;
+        }
+        if(pointX < 0)
+        {
+          pointX = 2; 
+        }
+      if(oldpointx!=pointX || oldpointy != pointY)
+      {
+        
+          display.drawPixel(pointX, pointY, BLACK);
+          display.display();
+        
+      }
+      if (digitalRead(PIN_BUTTON_RIGHT) == LOW) 
+      {
+        display.clearDisplay();
+        display.display();
+       }
+       oldpointx=pointX;
+       oldpointy=pointY;
+       pressup = digitalRead(PIN_BUTTON_UP);
+       pressdown = digitalRead(PIN_BUTTON_DOWN);
+  }
 }
