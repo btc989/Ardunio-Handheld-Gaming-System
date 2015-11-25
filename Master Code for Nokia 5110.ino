@@ -48,7 +48,7 @@ const byte PIN_ANALOG_Y = 1;
 #include <Adafruit_PCD8544.h>
 
 #define screenHeight 48
-#define screenHeight 84
+#define screenWidth 84
 #define scePin  7  // SCE - Chip select, pin 3 on LCD.
 #define rstPin 6  // RST - Reset, pin 4 on LCD.
 #define dcPin 5   // DC - Data/Command, pin 5 on LCD.
@@ -72,6 +72,17 @@ const byte PIN_ANALOG_Y = 1;
 #define XPOS 0
 #define YPOS 1
 #define DELTAY 2
+
+/*****For Snake*****/
+int screenheight = 48;
+int screenwidth = 84;
+int direction=0;
+const int size = 15;
+int layout[size];
+int bodyX[size];
+int bodyY[size];
+
+/**********/
 
 void setup()
 {
@@ -107,18 +118,19 @@ void loop()
   Serial.println("Made it back to menu");
   display.clearDisplay();
   display.display();
-
+  Serial.println(choice);
   if (choice == 1)
   {
     TicTacToe();
   }
   else if (choice == 2)
   {
-    Pong();
+    Snake();
+    
   }
   else
   {
-    Snake();
+    Pong();
   }
   
 }
@@ -131,7 +143,7 @@ int menu() //This will hold the call for the menu: from this function
   char * game1 = ">TIC-TAC-TOE";
   char * game2 = ">SNAKE";
   char * game3 = ">PONG";
-  int count = 1;
+  int count = 3;
 
   display.clearDisplay();
   display.display();
@@ -149,6 +161,8 @@ int menu() //This will hold the call for the menu: from this function
   for (int i = 0; ; i++)
   {
     int pressA;
+    int pressup;
+    int pressdown;
     delay(200);
     pressA = digitalRead(PIN_BUTTON_RIGHT);
     if (pressA == LOW)
@@ -156,15 +170,14 @@ int menu() //This will hold the call for the menu: from this function
       return count;
     }
 
-    buttonY =  analogRead(A1);
-    Serial.println(buttonY);
-    if (buttonY < 300)
+    //buttonY =  analogRead(A1);
+    pressup = digitalRead(PIN_BUTTON_UP);
+    pressdown = digitalRead(PIN_BUTTON_DOWN);
+    //Serial.println(buttonY);
+    if (pressdown==LOW)
     {
-      //delay(500);
-      Serial.println(count);
       if ( count == 1)
       {
-        Serial.println("Made it into first if an count");
         count = 2;
 
         display.clearDisplay();
@@ -178,15 +191,20 @@ int menu() //This will hold the call for the menu: from this function
         display.println(" PONG");
         display.display();
         //delay(1000);
-        do
+        //buttonY =  analogRead(A1);
+        pressup = digitalRead(PIN_BUTTON_UP);
+        pressdown = digitalRead(PIN_BUTTON_DOWN);
+        while ((pressup != LOW) || (pressdown != LOW))
         {
           pressA = digitalRead(PIN_BUTTON_RIGHT);
           if (pressA == LOW)
           {
             return count;
           }
-          buttonY =  analogRead(A1);
-        } while ( (buttonY >= 300) && (buttonY <= 400));
+          //buttonY =  analogRead(A1);
+          pressup = digitalRead(PIN_BUTTON_UP);
+          pressdown = digitalRead(PIN_BUTTON_DOWN);
+        } 
       }
       else if (count == 2)
       {
@@ -204,15 +222,15 @@ int menu() //This will hold the call for the menu: from this function
         do
         {
           pressA = digitalRead(PIN_BUTTON_RIGHT);
-          Serial.println(pressA);
-
           if (pressA == LOW)
           {
             return count;
           }
-          buttonY =  analogRead(A1);
-          Serial.println(buttonY);
-        } while ( (buttonY >= 300) && (buttonY <= 400));
+          //buttonY =  analogRead(A1);
+          //Serial.println(buttonY);
+          pressup = digitalRead(PIN_BUTTON_UP);
+          pressdown = digitalRead(PIN_BUTTON_DOWN);
+        } while ( pressup !=LOW || pressdown != LOW);
       }
       else if (count == 3)
       {
@@ -235,88 +253,10 @@ int menu() //This will hold the call for the menu: from this function
           {
             return count;
           }
-          buttonY =  analogRead(A1);
-        } while ( (buttonY >= 300) && (buttonY <= 400));
-      }
-    }
-
-    else if (buttonY > 400)
-    {
-      //delay(500);
-      if ( count == 1)
-      {
-        count = 3;
-        display.clearDisplay();
-        display.setCursor(12,0);
-        display.println("Game Menu");
-        display.setCursor(0,12);
-        display.println(" TIC-TAC-TOE");
-        display.setCursor(0,22);
-        display.println(" SNAKE");
-        display.setCursor(0,32);
-        display.println(game3);
-        display.display();
-
-        do
-        {
-          pressA = digitalRead(PIN_BUTTON_RIGHT);
-          if (pressA == LOW)
-          {
-            return count;
-          }
-          buttonY =  analogRead(A1);
-        } while ( (buttonY >= 300) && (buttonY <= 400));
-      }
-
-      else if (count == 2)
-      {
-        count = 1;
-        display.clearDisplay();
-        display.setCursor(12,0);
-        display.println("Game Menu");
-        display.setCursor(0,12);
-        display.println(game1);
-        display.setCursor(0,22);
-        display.println(" SNAKE");
-        display.setCursor(0,32);
-        display.println(" PONG");
-        display.display();
-
-        do
-        {
-          pressA = digitalRead(PIN_BUTTON_RIGHT);
-          if (pressA == LOW)
-          {
-            return count;
-          }
-          buttonY =  analogRead(A1);
-        } while ( (buttonY >= 300) && (buttonY <= 400));
-      }
-
-      else if (count == 3)
-      {
-        count = 2;
-
-        display.clearDisplay();
-        display.setCursor(12,0);
-        display.println("Game Menu");
-        display.setCursor(0,12);
-        display.println(" TIC-TAC-TOE");
-        display.setCursor(0,22);
-        display.println(game2);
-        display.setCursor(0,32);
-        display.println(" PONG");
-        display.display();
-
-        do
-        {
-          pressA = digitalRead(PIN_BUTTON_RIGHT);
-          if (pressA == LOW)
-          {
-            return count;
-          }
-          buttonY =  analogRead(A1);
-        } while ( (buttonY >= 300) && (buttonY <= 400));
+          //buttonY =  analogRead(A1);
+          pressup = digitalRead(PIN_BUTTON_UP);
+          pressdown = digitalRead(PIN_BUTTON_DOWN);
+        } while ( pressdown != LOW || pressup != LOW);
       }
     }
   }
@@ -324,15 +264,324 @@ int menu() //This will hold the call for the menu: from this function
 
 void Pong()
 {
+    // variables for the position of the ball and paddle
+    display.setContrast(65);
+    int pX = 10;
+    int pY = 35;
+    int oldPX, oldPY;
+    int directionX = 1;
+    int directionY = 1;
+    int ballSpeed = 10; // lower numbers are faster
+    int ballX =20;
+    int ballY = 10; 
+    int oldBallX =1;
+    int oldBallY=1;
+    int myWidth = 84;
+    int myHeight = 48;
+    int count=0;
+    bool running = true;
 
+    while(running)
+    {
+      int pressX = analogRead(A0);
+      if(pressX>400)
+      {
+        pX+=2;
+        if(pX>display.width())
+        {
+          pX=display.width();
+        } 
+      }
+      else if(pressX<300)
+      {
+        pX-=2;
+        if(pX<0)
+        {
+         pX=0;
+        }
+      }
+   
+      if (oldPX != pX) 
+      {
+        display.drawLine(oldPX, oldPY, oldPX+10, oldPY, WHITE);  
+        display.display();
+      } 
+      display.drawLine(pX, pY, pX+10, pY, BLACK);
+      display.display();
+      oldPX = pX;
+      oldPY = pY; 
+      running = moveBall(directionX,directionY, ballX, ballY, oldBallX, oldBallY, pX,pY, count);
+    }
+    display.clearDisplay();
+    display.display();
+    display.setCursor(12,0);
+    display.println("Game over!");
+    display.setCursor(0,22);
+    display.println("Your score is: ");
+    display.setCursor(39,35);
+    display.println(count);
+    display.display();
+    delay(4000);
+    
+}
 
+bool moveBall(int& directionX,int& directionY, int& ballX,int& ballY, int& oldBallX, int& oldBallY, int& pX, int& pY, int& count) 
+{
+  
+  if (ballY > display.height() )
+  {
+    return false;
+  }
+  if (ballY < 0)  //when wall that is not base wall is hit direction is reversed
+  {
+    directionY = -directionY ; 
+  }
+
+  if (ballX > display.width()) 
+  {
+    directionX = -directionX;
+  }
+
+  if(ballX < 0)
+  {
+    directionX = -directionX+1; //with a little more randomness and increases speed everytime this wall is hit
+  }
+
+  if (inPaddle(ballX, ballY, pX, pY, 10, 10,count)) //if paddle hits the ball
+  {
+    directionX = -directionX; //ball direction is reversed
+    directionY = -directionY;
+  }
+
+  // update the ball's position
+  ballX += directionX;
+  ballY += directionY;
+
+  
+  display.fillRect(ballX, ballY, 2, 2, WHITE); // erase the ball's previous position
+  display.display();
+  if (oldBallX != ballX || oldBallY != ballY) 
+  {
+    display.fillRect(ballX, ballY, 2, 2, BLACK);
+    display.display();
+  }
+  display.fillRect(ballX, ballY, 2, 2, WHITE);
+  display.display();
+  oldBallX = ballX;
+  oldBallY = ballY;
+  return true; //game is still going
+}
+boolean inPaddle(int x, int y, int rectX, int rectY, int rectWidth, int rectHeight, int& count) 
+{
+  boolean result = false;
+  if ((x >= rectX && x <= (rectX + rectWidth)) && (y >= rectY && y <= (rectY + rectHeight))) 
+  {
+    result = true;
+    count++;
+  }
+  return result;
 }
 
 void Snake()
-{
+{   
+     byte RIGHT = 3;
+     byte UP = 2;
+     byte DOWN = 4;
+     byte LEFT = 5;
+    layout[0]=1;
+    bodyX[0]=20;
+    bodyY[0]=20;
+    for(int i =1; i<size; i++)
+    {
+      layout[i]=0;
+      bodyX[i]=0;
+      bodyY[i]=0; 
+    }
+    int headxpos=20;
+    int headypos=20;
+    int foodx=0;
+    int foody=0;
+    int food = 0;
+    bool running;
+    running = true;
+    
+    generateFood(foodx,foody);
+    while (running) 
+    {
+        // If a key is pressed
+        //int pressA = digitalRead(UP);
+        int buttonY =  analogRead(A1);
+        int buttonX =  analogRead(A0);
+        //Serial.println(buttonX);
+        //Serial.println("NEXT");
+        //Serial.println(buttonY);
+        if (buttonY <300 )
+        {
+            direction = 0;
+         }
+        //int pressB = digitalRead(RIGHT);
+        if (buttonX >360)
+        {
+          direction = 1;
+        }
+        //int pressC = digitalRead(DOWN);
+        if (buttonY> 400)
+        {
+          direction = 2;
+         }
+         //int pressD = digitalRead(LEFT);
+        if (buttonX <300)
+        {
+          direction = 3;  
+        }
+        //Serial.println(direction);
+        update( headxpos, headypos, food, running, foodx, foody);
+        //Serial.println("We made it back");
+        delay(500);
+    }
 
-
+    display.clearDisplay();
+    display.display();
+    display.setCursor(0,0);
+    display.println("Game over!");
+    display.setCursor(0,22);
+    display.println("Your score is: ");
+    display.setCursor(25,22);
+    display.println(food);
+    display.display();
 }
+
+// Updates the map
+void update( int& headxpos, int& headypos, int& food, bool& running,  int& foodx, int& foody) 
+{
+    // Move in direction indicated
+    if(direction == 3)
+    {
+         move(-1, 0, headxpos, headypos, food, running,foodx,foody);
+    }
+    else if(direction==0)
+    {
+       move(0, 1,headxpos, headypos,food,running,foodx,foody);
+    }
+    else if(direction==1)
+    {
+      move(1, 0, headxpos, headypos,food,running,foodx,foody);
+    }
+    else if(direction==2)
+    {
+      move(0, -1,headxpos, headypos,food,running, foodx,foody);
+    }
+}
+// Moves snake head to new location
+void move(int dx, int dy, int& headxpos,int& headypos,  int& food,bool& running, int& foodX, int& foodY) 
+{
+    // determine new head position
+    int newx = headxpos + dx;
+    int newy = headypos + dy;
+
+    if (newy > display.height() )
+    {
+      newy= -newy;
+    }
+    if (newy < 0)  
+    {
+      newy = -newy ; 
+    }
+
+    if (newx > display.width()) 
+    {
+      newx= -newx;
+    }
+
+    if(newx < 0)
+    {
+      newx = -newx; 
+    }
+    
+    bodyX[0]=newx;
+    bodyY[0]=newy;
+    display.drawPixel(headxpos, headypos, WHITE);
+    display.drawPixel(bodyX[0], bodyY[0], BLACK);
+    display.display();
+    for(int i = 1; i<size; i++)
+    {
+      if(bodyX[i]!=0)
+      {
+        if(dx==-1 && dy==0)
+        {
+          bodyX[food]=headxpos + dx -1;
+          bodyY[food]=headypos + dy;
+          display.drawPixel(headxpos+1, headypos+1, WHITE);
+          display.drawPixel(bodyX[i], bodyY[i], BLACK);
+          display.display();
+        }
+        else if(dx==0 && dy==1)
+        {
+          bodyX[food]=headxpos + dx;
+          bodyY[food]=headypos + dy+1;
+          display.drawPixel(headxpos+1, headypos+1, WHITE);
+          display.drawPixel(bodyX[i], bodyY[i], BLACK);
+          display.display();
+        }
+         else if(dx==1 && dy==0)
+        {
+          bodyX[food]=headxpos + dx +1;
+          bodyY[food]=headypos + dy;
+          display.drawPixel(headxpos+1, headypos+1, WHITE);
+          display.drawPixel(bodyX[i], bodyY[i], BLACK);
+          display.display();
+        }
+         if(dx==0 && dy==-1)
+        {
+          bodyX[food]=headxpos + dx ;
+          bodyY[food]=headypos + dy-1;
+          display.drawPixel(headxpos+1, headypos+1, WHITE);
+          display.drawPixel(bodyX[i], bodyY[i], BLACK);
+          display.display();
+        }
+        
+      }
+    }
+    Serial.println(bodyX[0]);
+    Serial.println(foodX);
+    if(bodyX[0]==foodX)
+    {
+      if(bodyY[0]==foodY)
+      {
+        display.drawPixel(foodY, foodX, WHITE);
+        display.display();
+        food++;
+        layout[food]=1;
+        bodyX[food]=headxpos + dx+1;
+        bodyY[food]=headypos + dy+1;
+        generateFood(foodX,foodY);
+      }
+    }
+    for(int i = 1; i<size; i++)
+    {
+      if(bodyX[i]!=0)
+      {
+          if(newx == bodyX[i] && newy == bodyY[i])
+          {
+            running = false;
+            return;
+          }
+      }
+    }
+    // Move head to new location
+    headxpos = newx;
+    headypos = newy;
+}
+// Generates new food on map
+void generateFood(int& foodx, int& foody) 
+{
+    //Serial.println("Made it into generate food");
+    foodx = random(83); // Generate random x and y values within the map
+    foody = random(46);
+    display.drawPixel(foodx, foody, BLACK);
+    display.display();      
+}
+
 
 void TicTacToe()
 {
@@ -877,11 +1126,6 @@ char EndGame(char b[][3]) // returns a t for tie, c for continue, 1 for player 1
   }
   else if(tieTest) //Tests the previous set bool to check if a tie has been made
   {
-    return tie;
-  }
-  else  //If no other conditions return first then the game can continue
-    return cont;//there is no win. 
-}
     return tie;
   }
   else  //If no other conditions return first then the game can continue
