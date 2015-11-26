@@ -312,8 +312,8 @@ void Pong()
       int pressX = analogRead(A0);
       if(pressX>400)
       {
-        pX+=2;
-        if(pX>display.width())
+        pX+=2; //positon move the plus to corresponds to how fast the paddle moves
+        if(pX>display.width()) //if reaching the edge of screen
         {
           pX=display.width();
         } 
@@ -327,12 +327,12 @@ void Pong()
         }
       }
    
-      if (oldPX != pX) 
+      if (oldPX != pX) //if position has changed
       {
-        display.drawLine(oldPX, oldPY, oldPX+10, oldPY, WHITE);  
+        display.drawLine(oldPX, oldPY, oldPX+10, oldPY, WHITE);  //erases old paddle
         display.display();
       } 
-      display.drawLine(pX, pY, pX+10, pY, BLACK);
+      display.drawLine(pX, pY, pX+10, pY, BLACK); //draws in new paddle
       display.display();
       oldPX = pX;
       oldPY = pY; 
@@ -393,7 +393,7 @@ bool moveBall(int& directionX,int& directionY, int& ballX,int& ballY, int& oldBa
   }
   display.fillRect(ballX, ballY, 2, 2, WHITE);
   display.display();
-  oldBallX = ballX;
+  oldBallX = ballX; //assigns new to old
   oldBallY = ballY;
   return true; //game is still going
 }
@@ -433,43 +433,35 @@ void Snake()
     int olddy;
     bool running;
     running = true;
-    
-    generateFood(foodx,foody);
+  
+    generateFood(foodx,foody); //first draws food...function call
     while (running) 
     {
-        // If a key is pressed
-        //int pressA = digitalRead(UP);
-        int buttonY =  analogRead(A1);
+        int buttonY =  analogRead(A1); //read in values from joystick
         int buttonX =  analogRead(A0);
-        //Serial.println(buttonX);
-        //Serial.println("NEXT");
-        //Serial.println(buttonY);
         if (buttonY <300 )
         {
-            direction = 0;
+            direction = 0; //each number corresponds in update
          }
-        //int pressB = digitalRead(RIGHT);
         if (buttonX >400)
         {
           direction = 1;
         }
-        //int pressC = digitalRead(DOWN);
         if (buttonY> 400)
         {
           direction = 2;
          }
-         //int pressD = digitalRead(LEFT);
         if (buttonX <300)
         {
           direction = 3;  
         }
-        //Serial.println(direction);
-        update( headxpos, headypos, food, running, foodx, foody, olddx, olddy);
-        //Serial.println("We made it back");
-        delay(100);
+        update( headxpos, headypos, food, running, foodx, foody, olddx, olddy); //function call
+        delay(80); //the greater the delay the slower the snake will move--can adjust this value for harder or easier game
+       
+       
     }
 
-    display.clearDisplay();
+    display.clearDisplay(); //game is done
     display.display();
     display.setCursor(12,0);
     display.println("Game over!");
@@ -484,7 +476,7 @@ void Snake()
 // Updates the map
 void update( int& headxpos, int& headypos, int& food, bool& running,  int& foodx, int& foody, int& olddx, int& olddy) 
 {
-    // Move in direction indicated
+    // each corresponding direction passes coordinates to move inorder to change the head of snake
     if(direction == 3)
     {
          move(-1, 0, headxpos, headypos, food, running,foodx,foody, olddx, olddy);
@@ -505,46 +497,53 @@ void update( int& headxpos, int& headypos, int& food, bool& running,  int& foodx
 // Moves snake head to new location
 void move(int dx, int dy, int& headxpos,int& headypos,  int& food,bool& running, int& foodX, int& foodY, int& olddx, int& olddy) 
 {
-    // determine new head position
+    // determine new head position, according to passed coordinates and previous position
     int newx = headxpos + dx;
     int newy = headypos + dy;
 
-    if (newy > display.height() )
+    if (newy > display.height() ) //checks if wall has been hit, if so ends game.. can also comment out and just have it reverse directions
     {
-      newy= -newy;
+      //newy= -newy;
+      running=false;
+      return;
     }
     if (newy < 0)  
     {
-      newy = -newy ; 
+      running=false;
+      return;
+      //newy = -newy ; 
     }
 
     if (newx > display.width()) 
     {
-      newx= -newx;
+      running=false;
+      return;
+      //newx= -newx;
     }
 
     if(newx < 0)
     {
-      newx = -newx; 
+      running=false;
+      return;
+      //newx = -newx; 
     }
     
     bodyX[0]=newx;
     bodyY[0]=newy;
-    display.clearDisplay();
+    display.clearDisplay(); //clears screen briefly
     display.display();
-    display.drawPixel(foodX, foodY, BLACK);
+    display.drawPixel(foodX, foodY, BLACK); //rewrites food
     display.drawPixel(headxpos, headypos, WHITE);
-    display.drawPixel(bodyX[0], bodyY[0], BLACK);
+    display.drawPixel(bodyX[0], bodyY[0], BLACK); //writes in body
      
     display.display();
-    for(int i = size-1; i>0; i--)
+    for(int i = size-1; i>0; i--) //starts at back of snake
     {
-      if(bodyX[i]!=0)
+      if(bodyX[i]!=0) //as long as there is a 1 in the spot
       {
-        if(i==1)
+        if(i==1) //if at first body segment
         {
-          Serial.println("In one body");
-          if(dx==-1 && dy==0)
+          if(dx==-1 && dy==0) //checks the passed in coordinates to determine where the body should go inline with the snake
           {
             bodyX[i]=headxpos + dx -i;
             bodyY[i]=headypos + dy;
@@ -575,9 +574,7 @@ void move(int dx, int dy, int& headxpos,int& headypos,  int& food,bool& running,
         }
         else
         {
-            Serial.println("In body p2");
-            Serial.println(i);
-            bodyX[i]=bodyX[i-1];
+            bodyX[i]=bodyX[i-1]; //assigns current body segment to the position of the one before it
             bodyY[i]=bodyY[i-1];
             display.drawPixel(bodyX[i], bodyY[i], BLACK);
             display.display(); 
@@ -585,6 +582,7 @@ void move(int dx, int dy, int& headxpos,int& headypos,  int& food,bool& running,
       }
     }
 
+  /* This is for collison with the body....this feature is not yet working
     if(food>5)
     {
       for(int i = size-1; i>0; i--)
@@ -604,55 +602,44 @@ void move(int dx, int dy, int& headxpos,int& headypos,  int& food,bool& running,
           break;
         }
       }
-    }
-    //Serial.println(bodyX[0]);
-    //Serial.println(foodX);
-    if(bodyX[0]==foodX)
+    }*/
+    
+    if(bodyX[0]==foodX) //if head hits the food
     {
       if(bodyY[0]==foodY)
       {
-        display.drawPixel(foodY, foodX, WHITE);
+        display.drawPixel(foodY, foodX, WHITE); //erases the food
         display.display();
-        food++;
-        if(food+1==size)
+        food++; //increases the amount
+        if(food+1==size) //at the end of the snake no more can be added to the array
         {
           running=false;
           display.clearDisplay();
           display.display();
           display.setCursor(12,0);
           display.println("You Win!");
+          display.display();
           delay(4000);
           return;
         }
-        //if(food==1)
-        //{
-           layout[food]=1;
-           bodyX[food]=headxpos + dx+1;
+           layout[food]=1; //increases body
+           bodyX[food]=headxpos + dx+1; //gives new positions 
            bodyY[food]=headypos + dy+1;
-       // }
-        //else
-        //{
-          //layout[food]=1;
-          //bodyX[food]=headxpos + dx+1;
-          //bodyY[food]=headypos + dy+1;
-        //}
-        generateFood(foodX,foodY);
+           generateFood(foodX,foodY); //function call to create another food
       }
     }
    
-    // Move head to new location
-    olddx=foodX;
-    olddy=foodY;
+    // assigns the new to the old
     headxpos = newx;
     headypos = newy;
 }
 // Generates new food on map
 void generateFood(int& foodx, int& foody) 
 {
-    //Serial.println("Made it into generate food");
-    foodx = random(83); // Generate random x and y values within the map
-    foody = random(46);
-    display.drawPixel(foodx, foody, BLACK);
+    
+    foodx = random(80)+2; // Generate random x and y values within the map the plus two is so the values can't end up on the very top of the screen
+    foody = random(42)+2;
+    display.drawPixel(foodx, foody, BLACK); //draws food
     display.display();      
 }
 
@@ -663,7 +650,7 @@ void TicTacToe()
   char ans;
   char player2;
   int x, y;
-  char respo; //for the do while loop for continue game play
+  bool respo=true; //for the do while loop for continue game play
   char b[3][3];
   for(int i =0; i<3; i++)
   {
@@ -1216,7 +1203,7 @@ void EtchASketch()
   int pressdown;
   pressup = digitalRead(PIN_BUTTON_UP);
   pressdown = digitalRead(PIN_BUTTON_DOWN);
-  while ( pressdown != LOW || pressup != LOW) 
+  while ( pressdown != LOW || pressup != LOW) //loops until button is pressed
   {
       int buttonY = analogRead(1);
       int buttonX = analogRead(0); // reads the joystick values
@@ -1238,7 +1225,7 @@ void EtchASketch()
           pointX--;  
         }
         
-        if (pointY > display.height() )
+        if (pointY > display.height() ) //checks if screen edge has been reached does not let it go further
         {
             pointY= display.height()-2;
         }
@@ -1254,14 +1241,14 @@ void EtchASketch()
         {
           pointX = 2; 
         }
-      if(oldpointx!=pointX || oldpointy != pointY)
+      if(oldpointx!=pointX || oldpointy != pointY) //if position has changed
       {
         
-          display.drawPixel(pointX, pointY, BLACK);
+          display.drawPixel(pointX, pointY, BLACK);//draws in new pixel
           display.display();
         
       }
-      if (digitalRead(PIN_BUTTON_RIGHT) == LOW) 
+      if (digitalRead(PIN_BUTTON_RIGHT) == LOW) //clears the screen if button pressed
       {
         display.clearDisplay();
         display.display();
