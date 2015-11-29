@@ -15,7 +15,7 @@
 <p>Overview: <br>
   This project is to create a handheld gaming system using the Ardunio Uno. This program includes <br>
     ~ Menu Function <br>
-    ~ Three games ( Snake, Pong, Tic-Tac-Toe) <br>
+    ~ Four games ( Snake, Pong, Tic-Tac-Toe, Etch-A-Sketch) <br>
     ~ Bluetooth connection between Ardunios (comming soon...) </p>
 
 
