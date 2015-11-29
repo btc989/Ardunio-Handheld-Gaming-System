@@ -1,11 +1,11 @@
 /*
  * Notes for Button and Joystick circuit
- * 
- * The space shows VIN; The following instructions are setup up 
+ *
+ * The space shows VIN; The following instructions are setup up
  * from the right side of pins to left ending with the space then pin
- * 
+ *
  * Far right:
- * 
+ *
  * Gnd -> Gnd
  * A0 -> A0
  * A1 -> A1
@@ -18,7 +18,7 @@
  * P3 -> unkonw at moment out due to screen pins 6 or 11 are no longer avalable
  * VDD -> 5V
  * VIN -> VIN
- * const byte PIN_BUTTON_SELECT = 2; 
+ * const byte PIN_BUTTON_SELECT = 2;
 const byte PIN_BUTTON_RIGHT = 3;
 const byte PIN_BUTTON_UP = 4;
 const byte PIN_BUTTON_DOWN = 5;
@@ -27,18 +27,18 @@ const byte PIN_ANALOG_X = 0;
 const byte PIN_ANALOG_Y = 1;
  * I am not if all these pins are needed yet since the board have slots for
  * two joysticks and we are only using one.
- * 
- * 
- * 
+ *
+ *
+ *
  * https://www.virtuabotix.com/running-a-versalino-load-board-with-a-regular-arduino/
  * http://www.josephdattilo.com/writing-bluetooth-packet-based-sketch-versalino-control-board/
  * https://www.virtuabotix.com/arduino-gamepad-versalino-control-1-0-pin-usage/
- * 
- * 
- * 
- * 
- * 
- * 
+ *
+ *
+ *
+ *
+ *
+ *
  */
 
 #include <SPI.h> // We'll use SPI to transfer data. Faster!
@@ -55,16 +55,15 @@ TFT TFTscreen = TFT(cs, dc, rst);
 int pointX = TFTscreen.width() / 2;
 int pointY = TFTscreen.height() / 2; // puts the pointer in the middle
 
-const byte PIN_BUTTON_SELECT = 2; 
+const byte PIN_BUTTON_SELECT = 2;
 
 const byte PIN_BUTTON_RIGHT = 3;
-const byte PIN_BUTTON_UP = 4;
-const byte PIN_BUTTON_DOWN = 5;
-const byte PIN_BUTTON_LEFT = 6;
+const byte PIN_BUTTON_UP = 2;
+const byte PIN_BUTTON_DOWN = 4;
+const byte PIN_BUTTON_LEFT = 5;
 
 const byte PIN_ANALOG_X = 0;
 const byte PIN_ANALOG_Y = 1;
-
 
 void setup()
 {
@@ -77,7 +76,11 @@ void setup()
 
   randomSeed(analogRead(4));
   TFTscreen.begin();
-  TFTscreen.background(255,255,255);
+  TFTscreen.stroke(0, 0, 0);
+  TFTscreen.setTextSize(2);
+  TFTscreen.background(255, 255, 255);
+  TFTscreen.text("B3 SYSTEMS", 20, 55);
+  delay(3000);
 }
 
 void loop()
@@ -90,244 +93,297 @@ void loop()
   choice = menu(); //menu function call
   Serial.println("Made it back to menu");
 
-  if(choice == 1)
+  if (choice == 1)
   {
-    TicTacToe(); 
+    Serial.println(choice);
+    TicTacToe();
   }
-  else if(choice == 2)
+  else if (choice == 2)
   {
-    Pong(); 
+    EtchaSketch();
+
   }
   else
   {
-    EtchaSketch();
-  }  
+    Pong();
+  }
 }
 
-int menu() //This will hold the call for the menu: from this function 
+int menu() //This will hold the call for the menu: from this function
 //each game will be called
 {
   int buttonY;
   int buttonX;
   char * game1 = ">TIC-TAC-TOE";
-  char * game2 = ">Etch-a-Sketch";
+  char * game2 = ">ETCHY SKETCH";
   char * game3 = ">PONG";
-  int count=1;
-
-  TFTscreen.stroke(0,0,0);
-  TFTscreen.text("Game Menu", 12, 0);
-
-  TFTscreen.text(game1, 0, 12);
-  TFTscreen.text(" Etch-a-Sketch", 0, 22);
-  TFTscreen.text(" PONG", 0, 32);
+  int count = 1;
   
-  for(int i =0; ; i++)
-  { 
+  TFTscreen.stroke(0, 0, 0);
+  TFTscreen.setTextSize(2);
+  TFTscreen.background(255, 255, 255);
+  TFTscreen.text("Game Menu", 27, 20);
+  TFTscreen.text(game1, 7, 50);
+  TFTscreen.text(" ETCHY SKETCH", 7, 70);
+  TFTscreen.text(" PONG", 7, 90);
+  TFTscreen.rect(20, 36, 120, 2);
+
+  for (int i = 0; ; i++)
+  {
     int pressA;
+    int pressup;
+    int pressdown;
     delay(200);
     pressA = digitalRead(PIN_BUTTON_RIGHT);
-    if(pressA == LOW)
+    if (pressA == LOW)
     {
-       return count;
-    }
-    
-    buttonY =  analogRead(A1);
-    Serial.println(buttonY);
-    if(buttonY < 500)
-    {
-      //delay(500);
-      Serial.println(count);
-      if( count == 1)
-      {
-        Serial.println("Made it into first if an count");
-        count = 2;
-        TFTscreen.background(255,255,255);
-        TFTscreen.text("Game Menu", 12, 0);
-        TFTscreen.text(" TIC-TAC-TOE", 0, 12);
-        TFTscreen.text(game2, 0, 22);
-        TFTscreen.text(" PONG", 0, 32);
-        
-        //delay(1000);
-        do
-        {
-           pressA = digitalRead(PIN_BUTTON_RIGHT); 
-          if(pressA == LOW)
-          {
-            return count;
-          }
-          buttonY =  analogRead(A1);
-        }while( (buttonY >= 500) && (buttonY <= 550));
-      }
-      else if(count == 2)
-      {
-        count = 3;
-        TFTscreen.background(255,255,255);
-        TFTscreen.text("Game Menu", 12, 0);
-        TFTscreen.text(" TIC-TAC-TOE", 0, 12);
-        TFTscreen.text(" Etch-a-Sketch", 0, 22);
-        TFTscreen.text(game3, 0, 32);
-        do
-        {
-           pressA = digitalRead(PIN_BUTTON_RIGHT);
-           Serial.println(pressA);
-           
-          if(pressA == LOW)
-          {
-            return count;
-          }
-          buttonY =  analogRead(A1);
-          Serial.println(buttonY);
-        }while( (buttonY >= 500) && (buttonY <= 550));
-      }
-     else if(count == 3)
-      {
-        count = 1;
-        TFTscreen.background(255,255,255);
-        TFTscreen.text("Game Menu", 12, 0);
-        TFTscreen.text(game1, 0, 12);
-        TFTscreen.text(" Etch-a-Sketch", 0, 22);
-        TFTscreen.text(" PONG", 0, 32);
-       
-        do
-        {
-           pressA = digitalRead(PIN_BUTTON_RIGHT); 
-          if(pressA == LOW)
-          {
-            return count;
-          }
-          buttonY =  analogRead(A1);
-        }while( (buttonY >= 500) && (buttonY <= 550));
-      } 
+      return count;
     }
 
-    else if (buttonY > 550)
+    pressup = digitalRead(PIN_BUTTON_UP);
+    pressdown = digitalRead(PIN_BUTTON_DOWN);
+    if (pressdown == LOW || pressup == LOW)
     {
-      //delay(500);
-      if( count == 1)
+      if ( count == 1)
       {
-        count = 3;
-        TFTscreen.background(255,255,255);
-        TFTscreen.text("Game Menu", 12, 0);
-        TFTscreen.text(" TIC-TAC-TOE", 0, 12);
-        TFTscreen.text(" Etch-a-Sketch", 0, 22);
-        TFTscreen.text(game3, 0, 32);
-        
-        do
-        {
-           pressA = digitalRead(PIN_BUTTON_RIGHT); 
-          if(pressA == LOW)
-          {
-            return count;
-          }
-          buttonY =  analogRead(A1);
-        }while( (buttonY >= 500) && (buttonY <= 550));
-      }
-      
-      else if(count == 2)
-      {
-        count = 1;
-        TFTscreen.background(255,255,255);
-        TFTscreen.text("Game Menu", 12, 0);
-        TFTscreen.text(game1, 0, 12);
-        TFTscreen.text(" Etch-a-Sketch", 0, 22);
-        TFTscreen.text(" PONG", 0, 32);
+        count = 2;
+        TFTscreen.background(255, 255, 255);
+        TFTscreen.text("Game Menu", 27, 20);
+        TFTscreen.text(" TIC-TAC-TOE", 7, 50);
+        TFTscreen.text(game2, 7, 70);
+        TFTscreen.text(" PONG", 7, 90);
+        TFTscreen.setTextSize(2);
+        TFTscreen.rect(20, 36, 120, 2);
           
-        do
+        pressup = digitalRead(PIN_BUTTON_UP);
+        pressdown = digitalRead(PIN_BUTTON_DOWN);
+        while ((pressup != HIGH) || (pressdown != HIGH))
         {
-           pressA = digitalRead(PIN_BUTTON_RIGHT);
-          if(pressA == LOW)
+          pressA = digitalRead(PIN_BUTTON_RIGHT);
+          if (pressA == HIGH)
           {
             return count;
           }
-          buttonY =  analogRead(A1);
-        }while( (buttonY >= 500) && (buttonY <= 550));
+          pressup = digitalRead(PIN_BUTTON_UP);
+          pressdown = digitalRead(PIN_BUTTON_DOWN);
+        }
       }
-      
-      else if(count == 3)
+      else if (count == 2)
       {
-        count = 2;
-        TFTscreen.background(255,255,255);
-        TFTscreen.text("Game Menu", 12, 0);
-        TFTscreen.text(" TIC-TAC-TOE", 0, 12);
-        TFTscreen.text(game2, 0, 22);
-        TFTscreen.text(" PONG", 0, 32);
+        count = 3;
+        TFTscreen.background(255, 255, 255);
+        TFTscreen.text("Game Menu", 27, 20);
+        TFTscreen.text(" TIC-TAC-TOE", 7, 50);
+        TFTscreen.text(" ETCHY SKETCH", 7, 70);
+        TFTscreen.text(game3, 7, 90);
+        TFTscreen.stroke(0, 0, 0);
+        TFTscreen.setTextSize(2);
+        TFTscreen.rect(20, 36, 120, 2);
+        do
+        {
+          pressA = digitalRead(PIN_BUTTON_RIGHT);
+          if (pressA == LOW)
+          {
+            return count;
+          }
+          pressup = digitalRead(PIN_BUTTON_UP);
+          pressdown = digitalRead(PIN_BUTTON_DOWN);
+        } while ( pressup != HIGH || pressdown != HIGH);
+      }
+      else if (count == 3)
+      {
+        count = 1;
+        TFTscreen.background(255, 255, 255);
+        TFTscreen.text("Game Menu", 27, 20);
+        TFTscreen.text(game1, 7, 50);
+        TFTscreen.text(" ETCHY SKETCH", 7, 70);
+        TFTscreen.text(" PONG", 7, 90);
+        TFTscreen.stroke(0, 0, 0);
+        TFTscreen.setTextSize(2);
+        TFTscreen.rect(20, 36, 120, 2);
 
         do
         {
-           pressA = digitalRead(PIN_BUTTON_RIGHT);
-          if(pressA == LOW)
+          pressA = digitalRead(PIN_BUTTON_RIGHT);
+          if (pressA == LOW)
           {
             return count;
           }
-          buttonY =  analogRead(A1);
-        }while( (buttonY >= 500) && (buttonY <= 550));
+          pressup = digitalRead(PIN_BUTTON_UP);
+          pressdown = digitalRead(PIN_BUTTON_DOWN);
+          Serial.println("MEME");
+        } while ( pressdown != HIGH || pressup != HIGH);
       }
-      }
-    } 
-  } 
+    }
+  }
+}
 
 void Pong()
 {
+  int myWidth = TFTscreen.width() ;
+  int myHeight = TFTscreen.height() / 2; // declares screen dimentions
+  TFTscreen.background(255, 255, 255);
+  bool test = true;
+  int paddleX = 40;
+  int paddleY = 120;
+  int oldPaddleX, oldPaddleY;
+  int ballDirectionX = 1;
+  int ballDirectionY = 11;
+  int ballX = 20;
+  int ballY = 10;
+  int oldBallX, oldBallY;
+  while (test)
+  {
+    int pressX = analogRead(A0);
+    Serial.println(pressX);
+    if (pressX > 600)
+    {
+      paddleX += 3; //positon move the plus to corresponds to how fast the paddle moves
+      if (paddleX > 140) //if reaching the edge of screen
+      {
+        paddleX = 140;
+      }
+    }
+    else if (pressX < 450)
+    {
+      paddleX -= 3;
+      if (paddleX < 0)
+      {
+        paddleX = 0;
+      }
+    }
+    if (oldPaddleX != paddleX) // checks if the paddle has moved
+    {
+      TFTscreen.rect(oldPaddleX, oldPaddleY, 20, 5);
+      TFTscreen.fill(255, 255, 255);
+    }
 
-  
+    TFTscreen.fill(0, 0, 0);
+    TFTscreen.rect(paddleX, paddleY, 20, 5); // draws new paddle and deletes old one
+
+    oldPaddleX = paddleX;
+    oldPaddleY = paddleY;
+
+    test = moveBall(ballDirectionX, ballDirectionY, ballX, ballY, oldBallX, oldBallY, paddleX, paddleY);
+
+  }
+
 }
 
+bool moveBall(int& ballDirectionX, int& ballDirectionY, int& ballX, int& ballY, int& oldBallX, int& oldBallY, int& paddleX, int& paddleY)
+{
+  if (ballX > TFTscreen.width() || ballX < 0)
+  {
+    ballDirectionX = -ballDirectionX;
+  }
+
+  if (ballY > TFTscreen.height())
+  {
+    return false; // kills game if the ball hits the bottom wall
+  }
+  if (ballY < 0)
+  {
+    ballDirectionY = -ballDirectionY; // makes the ball bounce if it hits a wall
+  }
+
+  if (inPaddle(ballX, ballY, paddleX, paddleY - 5, 20, 5))
+  {
+    ballDirectionX = -ballDirectionX + 1;
+    ballDirectionY = -ballDirectionY; // bounces ball of the paddle
+  }
+
+  ballX += ballDirectionX;
+  ballY += ballDirectionY; // direction of the ball
+
+  TFTscreen.noStroke();
+  TFTscreen.fill(255, 255, 255);
+  TFTscreen.rect(oldBallX, oldBallY, 5, 5); // redraws the ball
+
+  if (oldBallX != ballX || oldBallY != ballY) // tracks ball movement
+  {
+    TFTscreen.fill(0, 0, 0);
+    TFTscreen.rect(ballX, ballY, 5, 5); // redraws the ball
+
+  }
+
+  delay(80);
+  TFTscreen.noStroke();
+  TFTscreen.fill(255, 255, 255);
+  TFTscreen.rect(oldBallX, oldBallY, 5, 5); // draws the ball
+
+  oldBallX = ballX;
+  oldBallY = ballY;
+  return true;
+}
+boolean inPaddle(int x, int y, int rectX, int rectY, int rectWidth, int rectHeight)
+{
+  boolean result = false;
+
+  if ((x >= rectX && x <= (rectX + rectWidth)) && (y >= rectY && y <= (rectY + rectHeight)))
+  {
+    result = true;
+  }
+
+  return result;
+}
 void EtchaSketch()
 {
-  
-  TFTscreen.begin();
-  TFTscreen.background(255, 255, 255);   // make the background white
-}
+  TFTscreen.background(255, 255, 255);
+  int pressup = digitalRead(PIN_BUTTON_UP);
+  int pressdown = digitalRead(PIN_BUTTON_DOWN);
+  while ( pressup != HIGH || pressdown != LOW)
+  {
+    int xValue = analogRead(0);
+    int yValue = analogRead(1); // reads the joystick values
+    delay(50);
 
-void draw()
-{
-  int xValue = analogRead(0);
-  int yValue = analogRead(1); // reads the joystick values
-delay(50);
+    pointX = pointX + (map(xValue, 0, 1023, -2, 3)) / 2;
+    pointY = pointY + (map(yValue, 1023, 0, -2, 3)) / 2;   // map the values and update the position
 
-  pointX = pointX + (map(xValue, 0, 1023, -2, 3)) / 2;
-  pointY = pointY + (map(yValue, 1023, 0, -2, 2)) / 2;   // map the values and update the position
+    if (pointX > 159)
+    {
+      (pointX = 159);
+    }
 
-  if (pointX > 159) {
-    (pointX = 159);
+    if (pointX < 0)
+    {
+      (pointX = 0);
+    }
+    if (pointY > 127)
+    {
+      (pointY = 127);
+    }
+    if (pointY < 0)
+    {
+      (pointY = 0);   // won't let you draw past the edge of the screen
+    }
+
+    TFTscreen.stroke(0, 0, 0);
+    TFTscreen.rect(pointX, pointY, 2, 2); // declares the color and size of the pointer
+
+    if (digitalRead(PIN_BUTTON_RIGHT) == LOW)
+    {
+      TFTscreen.background(255, 255, 255); // clears the screen if the button is pushed
+    }
+    pressup = digitalRead(PIN_BUTTON_UP);
+    pressdown = digitalRead(PIN_BUTTON_DOWN);
   }
-
-  if (pointX < 0) {
-    (pointX = 0);
-  }
-  if (pointY > 127) {
-    (pointY = 127);
-  }
-
-  if (pointY < 0) {
-    (pointY = 0);   // won't let you draw past the edge of the screen
-  }
-
-  TFTscreen.stroke(0, 0, 0);
-  TFTscreen.rect(pointX, pointY, 2, 2); // declares the color and size of the pointer
-
-  if (digitalRead(PIN_BUTTON_RIGHT) == LOW) {
-    TFTscreen.background(255, 255, 255); // clears the screen if the button is pushed
-  }
-  
 }
 
 void TicTacToe()
 {
+  TFTscreen.background(255, 255, 255);
+  TFTscreen.stroke(0, 0, 0);
+  TFTscreen.setTextSize(2);
+  
   int buttonY;
   char ans;
   char player2;
   int x, y;
-  char respo; //for the do while loop for continue game play
-  char * b[3][3];
-  char  *p1;
-  char  *p2 ;
-  char *empty;
-
-   *p1='X';
-   *p2='O';
-   *empty= '\n';
-  
+  bool respo=true; //for the do while loop for continue game play
+  char *b[3][3];
+  char  * empty ;
+  *empty = '\n';
   for(int i =0; i<3; i++)
   {
     for(int j=0; j<3; j++)
@@ -336,12 +392,11 @@ void TicTacToe()
     }  
   }
   int count = 1;
-  TFTscreen.background(255, 255, 255);
-TFTscreen.text("Player 2:human or computer?",0,0);
-TFTscreen.text("> C",0,22);
-TFTscreen.text(" H",0,32);
-TFTscreen.stroke(0,0,0);
-TFTscreen.setTextSize(1);
+  
+  TFTscreen.text("Player 2:", 0, 0);
+  TFTscreen.text("> C", 0, 22);
+  TFTscreen.text("  H", 0, 42);
+
   for (int j = 0; ; j++)
   {
     int pressA;
@@ -353,17 +408,17 @@ TFTscreen.setTextSize(1);
       goto stop;
     }
     buttonY =  analogRead(A1);
-    if (buttonY < 500)
+    if (buttonY < 300)
     {
       if (count = 1)
       {
         count = 2;
-  TFTscreen.background(255, 255, 255);
-TFTscreen.text("Player 2:human or computer?",0,0);
-TFTscreen.text(" C",0,22);
-TFTscreen.text("> H",0,32);
-TFTscreen.stroke(0,0,0);
-TFTscreen.setTextSize(1);
+         TFTscreen.text("Player 2:", 0, 0);
+         TFTscreen.stroke(255,255,255);
+         TFTscreen.text(">  C", 0, 22);
+         TFTscreen.stroke(0,0,0);
+         TFTscreen.text("  C", 0, 22);
+         TFTscreen.text("> H", 0, 42);
         do
         {
           pressA = digitalRead(PIN_BUTTON_RIGHT);
@@ -373,17 +428,14 @@ TFTscreen.setTextSize(1);
             goto stop;
           }
           buttonY =  analogRead(A1);
-        } while ( (buttonY >= 500) && (buttonY <= 550));
+        } while ( (buttonY >= 300) && (buttonY <= 400));
       }
       else if (count = 2)
       {
         count = 1;
-  TFTscreen.background(255, 255, 255);
-TFTscreen.text("Player 2:human or computer?",0,0);
-TFTscreen.text("> C",0,22);
-TFTscreen.text(" H",0,32);
-TFTscreen.stroke(0,0,0);
-TFTscreen.setTextSize(1);
+          TFTscreen.text("Player 2:", 0, 0);
+          TFTscreen.text("> C", 0, 22);
+          TFTscreen.text("  H", 0, 42);
         do
         {
           pressA = digitalRead(PIN_BUTTON_RIGHT);
@@ -393,63 +445,54 @@ TFTscreen.setTextSize(1);
             goto stop;
           }
           buttonY =  analogRead(A1);
-        } while ( (buttonY >= 500) && (buttonY <= 550));
+        } while ( (buttonY >= 300) && (buttonY <= 400));
       }
     }
   }
 stop:
 
-TFTscreen.background(255,255,255);
+  TFTscreen.background(255, 255, 255);
   if (player2 == 'H') // For two player humans
   {
     ans = EndGame(b);
     Printarray(b);
     while ( ans == 'c')
     {
-TFTscreen.background(255,255,255);
-      TFTscreen.text("Player 1: ",0,0);
-      TFTscreen.stroke(0,0,0);
-      TFTscreen.setTextSize(1);
+      TFTscreen.background(255, 255, 255);
+      TFTscreen.text("Player 1:", 0, 0);
+      
       HumanMoves(x, y, b);
-      b[x][y]=p1;
+      *b[x][y]='X';
       Printarray(b);
       ans =EndGame(b);
       if (ans != 'c')
       {
         goto s;
       }
-      TFTscreen.background(255,255,255);
-      TFTscreen.text("Player 2: ",0,0);
-      TFTscreen.stroke(0,0,0);
-      TFTscreen.setTextSize(1);
+      TFTscreen.background(255, 255, 255);
+      TFTscreen.text("Player 2:", 0, 0);
       HumanMoves(x, y, b);
-      b[x][y]=p2;
+      *b[x][y]='O';
       Printarray(b);
       ans = EndGame(b);
     }
 s:
     if (ans == 't')
     {
-      TFTscreen.background(255,255,255);
-      TFTscreen.text("It is a Tie!",0,32);
-      TFTscreen.stroke(0,0,0);
-      TFTscreen.setTextSize(1);
+      TFTscreen.background(255, 255, 255);
+      TFTscreen.text("It is a Tie!", 0, 32);
       delay(4000);
     }
     else if (ans == '1')
     {
-      TFTscreen.background(255,255,255);
-      TFTscreen.text("Player 1 Wins!",0,32);
-      TFTscreen.stroke(0,0,0);
-      TFTscreen.setTextSize(1);
+      TFTscreen.background(255, 255, 255);
+      TFTscreen.text("Player 1 Wins!", 0, 32);
       delay(4000);
     }
     else if (ans == '2')
     {
-      TFTscreen.background(255,255,255);
-      TFTscreen.text("Player 2 Wins!",0,32);
-      TFTscreen.stroke(0,0,0);
-      TFTscreen.setTextSize(1);
+      TFTscreen.background(255, 255, 255);
+      TFTscreen.text("Player 2 Wins!", 0, 32);
       delay(4000);
     }
   }
@@ -461,12 +504,10 @@ s:
 
     while (ans == 'c')
     {
-      TFTscreen.background(255,255,255);
-      TFTscreen.text("Player 1: ",0,0);
-      TFTscreen.stroke(0,0,0);
-      TFTscreen.setTextSize(1);
+      TFTscreen.background(255, 255, 255);
+      TFTscreen.text("Player 1:", 0, 0);
       HumanMoves(x, y, b);
-      b[x][y]=p1;
+      *b[x][y]='X';
       Printarray(b);
       ans = EndGame(b);
       if (ans != 'c')
@@ -480,26 +521,20 @@ s:
 sto:
     if (ans == 't')
     {
-      TFTscreen.background(255,255,255);
-      TFTscreen.text("It is a Tie!",0,32);
-      TFTscreen.stroke(0,0,0);
-      TFTscreen.setTextSize(1);
+      TFTscreen.background(255, 255, 255);
+      TFTscreen.text("It is a Tie!", 0, 32);
       delay(4000);
     }
     else if (ans == '1')
     {
-      TFTscreen.background(255,255,255);
-      TFTscreen.text("Player 1 Wins!",0,32);
-      TFTscreen.stroke(0,0,0);
-      TFTscreen.setTextSize(1);
+      TFTscreen.background(255, 255, 255);
+      TFTscreen.text("Player 1 Wins!", 0, 32);
       delay(4000);
     }
     else if (ans == '2')
     {
-      TFTscreen.background(255,255,255);
-      TFTscreen.text("Player 2 Wins!",0,32);
-      TFTscreen.stroke(0,0,0);
-      TFTscreen.setTextSize(1);
+      TFTscreen.background(255, 255, 255);
+      TFTscreen.text("Player 2 Wins!", 0, 32);
       delay(4000);
     }
   }
@@ -507,54 +542,39 @@ sto:
 
 void Printarray( char* b[3][3] )
 {
-   TFTscreen.stroke(255,255,255);
-  char* a = b[0][0];
-  char* c = b[0][1];
-  char* d = b[0][2];
-  char* e = b[1][0];
-  char* f = b[1][1];
-  char* g = b[1][2];
-  char* h = b[2][0];
-  char* i = b[2][1];
-  char* j = b[2][2];
   //Row 1
+  TFTscreen.background(255, 255, 255);
   TFTscreen.text("+---+---+---+", 0, 0);
- TFTscreen.text("| ", 0, 12);   
-  TFTscreen.text(a, 3, 12);      
-  TFTscreen.text("| ", 6, 12);   
-  TFTscreen.text(c, 14, 12); 
-  TFTscreen.text("| ", 16, 12);   
-  TFTscreen.text(d, 18, 12); 
-  TFTscreen.text("| ", 20, 12);   
-  TFTscreen.text("+---+---+---+", 0, 14); 
-  TFTscreen.stroke(0,0,0);
-  TFTscreen.setTextSize(1);
- 
-   //Row 2  
-  TFTscreen.text("| ", 0, 22);   
-  TFTscreen.text(e, 3, 22);      
-  TFTscreen.text("| ", 6, 22);   
-  TFTscreen.text(f, 14, 22); 
-  TFTscreen.text("| ", 16, 22);   
-  TFTscreen.text(g, 18, 22); 
-  TFTscreen.text("| ", 20, 22);   
-  TFTscreen.text("+---+---+---+", 0, 24); 
-  TFTscreen.stroke(0,0,0);
-  TFTscreen.setTextSize(1);
+  TFTscreen.text("| ", 0, 20);
+  TFTscreen.text(b[0][0], 10, 8);
+  TFTscreen.text("| ", 44, 20);
+  TFTscreen.text(b[0][1], 36, 20);
+  TFTscreen.text("| ", 48, 20);
+  TFTscreen.text(b[0][2], 60, 20);
+  TFTscreen.text("| ", 72, 20);
+  TFTscreen.text("+---+---+---+", 0, 24);
+  
+  //Row 2
+  TFTscreen.text("| ", 0, 42);
+  TFTscreen.text(b[1][0], 10, 42);
+  TFTscreen.text("| ", 24, 42);
+  TFTscreen.text(b[1][1], 36, 42);
+  TFTscreen.text("| ", 48, 42);
+  TFTscreen.text(b[1][2], 60, 42);
+  TFTscreen.text("| ", 72, 42);
+  TFTscreen.text("+---+---+---+", 0, 48);
 
   //Row 3
-  TFTscreen.text("+---+---+---+", 0, 0);
-  TFTscreen.text("| ", 0, 32);   
-  TFTscreen.text(h, 3, 32);      
-  TFTscreen.text("| ", 6, 32);   
-  TFTscreen.text(i, 14, 32); 
-  TFTscreen.text("| ", 16, 32);   
-  TFTscreen.text(j, 18, 32); 
-  TFTscreen.text("| ", 20, 32);   
-  TFTscreen.text("+---+---+---+", 0, 34); 
-  TFTscreen.stroke(0,0,0);
-  TFTscreen.setTextSize(1);
-  delay(3000);
+  TFTscreen.text("| ", 0, 68);
+  TFTscreen.text(b[2][0], 10, 65);
+  TFTscreen.text("| ", 24, 68);
+  TFTscreen.text(b[2][1], 36, 65);
+  TFTscreen.text("| ", 48, 68);
+  TFTscreen.text(b[2][2], 60, 65);
+  TFTscreen.text("| ", 72, 68);
+  TFTscreen.text("+---+---+---+", 0, 70);
+
+  delay(8000);
 }
 
 void HumanMoves( int& x, int& y, char * b[][3] )
@@ -563,18 +583,10 @@ void HumanMoves( int& x, int& y, char * b[][3] )
   int pressA;
   int pressB;
   int buttonY;
-int w ;
-   int v ;
-   char  *p1;
-   char  *p2 ;
 
-   *p1='X';
-   *p2='Y';
-   
-   TFTscreen.text("Row: 1 ", 0, 38);
-   TFTscreen.text("Column: 1 ", 0, 38);
-   TFTscreen.stroke(0,0,0);
-   TFTscreen.setTextSize(1);
+  TFTscreen.text("Row: 1 ", 0, 25);
+  TFTscreen.text("Column: 1 ", 0, 45);
+ 
   do
   {
     for (int i = 0; ; i++)
@@ -582,20 +594,22 @@ int w ;
       pressA = digitalRead(PIN_BUTTON_RIGHT);
       if (pressA == LOW)
       {
+        
         x = 1;
         goto end;
+        Serial.println("SHHHH");
       }
       buttonY =  analogRead(A1);
-      if (buttonY < 500)
+      if (buttonY < 300)
       {
         if (count == 1)
         {
           count = 2;
-          TFTscreen.text("Row: 1 ",0,15);
           TFTscreen.stroke(255,255,255);
-          TFTscreen.text("Row: 2 ",0,15);
+          TFTscreen.text("Row: 1 ", 0, 25);
+
           TFTscreen.stroke(0,0,0);
-          TFTscreen.setTextSize(1);
+          TFTscreen.text("Row: 2 ", 0, 25);
           do
           {
             pressA = digitalRead(PIN_BUTTON_RIGHT);
@@ -605,16 +619,16 @@ int w ;
               goto end;
             }
             buttonY =  analogRead(A1);
-          } while ( (buttonY >= 500) && (buttonY <= 550));
+          } while ( (buttonY >= 300) && (buttonY <= 400));
         }
         else if (count == 2)
         {
           count = 3;
-          TFTscreen.text("Row: 2 ",0,15);
           TFTscreen.stroke(255,255,255);
-          TFTscreen.text("Row: 3 ",0,15);
+          TFTscreen.text("Row: 2 ", 0, 25);
+
           TFTscreen.stroke(0,0,0);
-          TFTscreen.setTextSize(1);
+          TFTscreen.text("Row: 3 ", 0, 25);
           do
           {
             pressA = digitalRead(PIN_BUTTON_RIGHT);
@@ -624,16 +638,16 @@ int w ;
               goto end;
             }
             buttonY =  analogRead(A1);
-          } while ( (buttonY >= 500) && (buttonY <= 550));
+          } while ( (buttonY >= 300) && (buttonY <= 400));
         }
         else if (count == 3)
         {
           count = 1;
-          TFTscreen.text("Row: 3 ",0,15);
           TFTscreen.stroke(255,255,255);
-          TFTscreen.text("Row: 1 ",0,15);
+          TFTscreen.text("Row: 3 ", 0, 25);
+
           TFTscreen.stroke(0,0,0);
-          TFTscreen.setTextSize(1);
+          TFTscreen.text("Row: 1 ", 0, 25);
           do
           {
             pressA = digitalRead(PIN_BUTTON_RIGHT);
@@ -643,7 +657,7 @@ int w ;
               goto end;
             }
             buttonY =  analogRead(A1);
-          } while ( (buttonY >= 500) && (buttonY <= 550));
+          } while ( (buttonY >= 300) && (buttonY <= 400));
         }
       }
     }
@@ -665,7 +679,7 @@ end:
           HumanMoves(x,y,b);
         }
       buttonY =  analogRead(A1);
-      if (buttonY < 500)
+      if (buttonY < 300)
       {
         pressB = digitalRead(PIN_BUTTON_DOWN);
         if (pressB == HIGH)
@@ -675,11 +689,11 @@ end:
         if (count == 1)
         {
           count = 2;
-          TFTscreen.text("Column: 1 ",0,25);
           TFTscreen.stroke(255,255,255);
-          TFTscreen.text("Column: 2 ",0,25);
+          TFTscreen.text("Column: 1 ", 0, 45);
           TFTscreen.stroke(0,0,0);
-          TFTscreen.setTextSize(1);
+          TFTscreen.text("Column: 2 ", 0, 45);
+          
           do
           {
             pressA = digitalRead(PIN_BUTTON_RIGHT);
@@ -689,16 +703,15 @@ end:
               goto done;
             }
             buttonY =  analogRead(A1);
-          } while ( (buttonY >= 500) && (buttonY <= 550));
+          } while ( (buttonY >= 300) && (buttonY <= 400));
         }
         else if (count == 2)
         {
           count = 3;
-          TFTscreen.text("Column: 2 ",0,25);
           TFTscreen.stroke(255,255,255);
-          TFTscreen.text("Column: 3 ",0,25);
+          TFTscreen.text("Column: 2 ", 0, 45);
           TFTscreen.stroke(0,0,0);
-          TFTscreen.setTextSize(1);
+          TFTscreen.text("Column: 3 ", 0, 45);
           do
           {
             pressA = digitalRead(PIN_BUTTON_RIGHT);
@@ -708,16 +721,15 @@ end:
               goto done;
             }
             buttonY =  analogRead(A1);
-          } while ( (buttonY >= 500) && (buttonY <= 550));
+          } while ( (buttonY >= 300) && (buttonY <= 400));
         }
         else if (count == 3)
         {
           count = 1;
-          TFTscreen.text("Column: 3 ",0,25);
           TFTscreen.stroke(255,255,255);
-          TFTscreen.text("Column: 1 ",0,25);
+          TFTscreen.text("Column: 3 ", 0, 45);
           TFTscreen.stroke(0,0,0);
-          TFTscreen.setTextSize(1);
+          TFTscreen.text("Column: 1 ", 0, 45);
           do
           {
             pressA = digitalRead(PIN_BUTTON_RIGHT);
@@ -727,55 +739,46 @@ end:
               goto done;
             }
             buttonY =  analogRead(A1);
-          } while ( (buttonY >= 500) && (buttonY <= 550));
+          } while ( (buttonY >= 300) && (buttonY <= 400));
         }
       }
     }
-  done:
-           w = x-1;
-           v = y-1;
-       
- }while((b[w][v] == p1) || (b[w][v] == p2)) ;  
+done:
+   x= x-1;
+   y=y-1;
+
+  } while ((*b[x][y] == 'X') || (*b[x][y] == 'O')) ; 
   
 }
 
 void RandomMoves( char * board[][3] )
 {
-  char  *p1;
-  char  *p2 ;
-  *p1='X';
-  *p2='O';
   int x = random(3); //Finds first random values of x and y between 1 and 3
   int y = random(3);
   
-  while((board[x][y] == p1) || ( board[x-1][y-1] == p2))// If there is already a letter there it will enter loop
+  while ((*board[x][y] == 'X') || ( *board[x][y] == 'O')) // If there is already a letter there it will enter loop
   {
     
     x = random(3); //It will keep looping until a new place is found without a letter
     y = random(3);
   }
-   board[x][y]=p1;
+   *board[x][y]='O';
 }
-char EndGame(char* b[][3]) // returns a t for tie, c for continue, 1 for player 1 won, 2 for player two won
+char EndGame(char * b[][3]) // returns a t for tie, c for continue, 1 for player 1 won, 2 for player two won
 {
   bool tieTest=true;
   char const tie='t';
   char const cont= 'c';
   char const p1w = '1';
   char const p2w = '2';
-  char  *p1;
-  char  *p2 ;
-  char *empty;
-  *empty = '\n';
-  *p1='X';
-  *p2='O';
-  
+
   for(int i=0; i<3; i++) //Tests to see if it is a tie, at the end of all the if statements it will check if the bool is true
   {
     for(int j=0; j<3; j++)
     {
-      if( b[i][j] == empty)//sets array to 0
+      if( *b[i][j] != '\n')//NOTE FOR RIGHT NOW TIE FUNCTION DOES NOT WORK CAN'T SEEM TO TELL WHEN ARRAY IS EMPTY FOR SOME REASON
       {
+        Serial.println("CHICHIU");
         tieTest = false;
       }
     }
@@ -783,67 +786,67 @@ char EndGame(char* b[][3]) // returns a t for tie, c for continue, 1 for player 
   
   //All of the following statements check to see if the various ways to win have happened
   
-  if(b[0][0]==p1&&b[0][1]==p1&&b[0][2]==p1)
+  if(*b[0][0]=='X'&&*b[0][1]=='X'&&*b[0][2]=='X')
   {
     return p1w;
   }
-  else if(b[0][0]==p2&&b[0][1]==p2&&b[0][2]==p2)
+  else if(*b[0][0]=='O'&&*b[0][1]=='O'&&*b[0][2]=='O')
   {
     return p2w;
   }
-  else if(b[1][0]==p1&&b[1][1]==p1&&b[1][2]==p1)
+  else if(*b[1][0]=='X'&&*b[1][1]=='X'&&*b[1][2]=='X')
   {
     return p1w;
   }
-  else if(b[1][0]==p2&&b[1][1]==p2&&b[1][2]==p2)
+  else if(*b[1][0]=='O'&&*b[1][1]=='O'&&*b[1][2]=='O')
   {
     return p2w;
   }
-  else if(b[2][0]==p1&&b[2][1]==p1&&b[2][2]==p1)
+  else if(*b[2][0]=='X'&&*b[2][1]=='X'&&*b[2][2]=='X')
   {
     return p1w;
   }
-  else if (b[2][0]==p2&&b[2][1]==p2&&b[2][2]==p2)
+  else if (*b[2][0]=='O'&&*b[2][1]=='O'&&*b[2][2]=='O')
   {
     return p2w;
   }
-  else if (b[0][0]==p1&&b[1][0]==p1&&b[2][0]==p1)
+  else if (*b[0][0]=='X'&&*b[1][0]=='X'&&*b[2][0]=='X')
   {
     return p1w;
   }
-  else if(b[0][0]==p2&&b[1][0]==p2&&b[2][0]==p2)
+  else if(*b[0][0]=='O'&&*b[1][0]=='O'&&*b[2][0]=='O')
   {
     return p2w;
   }
-  else if(b[0][1]==p1&&b[1][1]==p1&&b[2][1]==p1)
+  else if(*b[0][1]=='X'&&*b[1][1]=='X'&&*b[2][1]=='X')
   {
     return p1w;
   }
-  else if(b[0][1]==p2&&b[1][1]==p2&&b[2][1]==p2)
+  else if(*b[0][1]=='O'&&*b[1][1]=='O'&&*b[2][1]=='O')
   {
     return p2w;
   }
-  else if(b[0][2]==p1&&b[1][2]==p1&&b[2][2]==p1)
+  else if(*b[0][2]=='X'&&*b[1][2]=='X'&&*b[2][2]=='X')
   {
     return p1w;
   }
-  else if(b[0][2]==p2&&b[1][2]==p2&&b[2][2]==p2)
+  else if(*b[0][2]=='O'&&*b[1][2]=='O'&&*b[2][2]=='O')
   {
     return p2w;
   }
-  else if(b[0][0]==p1&&b[1][1]==p1&&b[2][2]==p1)
+  else if(*b[0][0]=='X'&&*b[1][1]=='X'&&*b[2][2]=='X')
   {
     return p1w;
   }
-  else if(b[0][0]==p2&&b[1][1]==p2&&b[2][2]==p2)
+  else if(*b[0][0]=='O'&&*b[1][1]=='O'&&*b[2][2]=='O')
   {
     return p2w;
   }
-  else if(b[0][2]==p1&&b[1][1]==p1&&b[2][0]==p1)
+  else if(*b[0][2]=='X'&&*b[1][1]=='X'&&*b[2][0]=='X')
   {
     return p1w;
   }
-  else if(b[0][2]==p2&&b[1][1]==p2&&b[2][0]==p2)
+  else if(*b[0][2]=='O'&&*b[1][1]=='O'&&*b[2][0]=='O')
   {
     return p2w;
   }
@@ -853,7 +856,4 @@ char EndGame(char* b[][3]) // returns a t for tie, c for continue, 1 for player 
   }
   else  //If no other conditions return first then the game can continue
     return cont;//there is no win. 
-
-    return tie;
-  
 }
