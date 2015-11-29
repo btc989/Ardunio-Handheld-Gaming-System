@@ -6,7 +6,7 @@
     Brayden, Brennen, Brooke <br>
     
     bclar686@gmail.com <br>
-    
+    brennen.b@hotmail.ca <br>
     Fall 2015</p>
 
 <p>License Information: <br>
@@ -22,12 +22,13 @@
 <p>Hardware Used: <br>
   ~Arduino Uno <br>
   ~ Nokia 5110 LCD Screen <br>
+  ~ Arduino TFT LCD screen <br>
   ~Joystick Shield V2.4 from ElecFreaks.com  <br>
   ~BlueTooth Module HC-05</p>
 
 <p>Project Design:</p>
 
-<p>~Screen HookUp: <br>
+<p>~ Nokia 5110 Screen HookUp: <br>
       8 pins are used for the LCD Screen. The following decribes the hookup: <br>
        -VCC = 3.3 Volts ****PLEASE NOTE ANYMORE THEN 3.3 VOLTS WILL BLOW OUT THE LEDS IN THE SCREEN <br>
       -GND = Ground Pin <br>
@@ -37,7 +38,18 @@
       -DN = Pin 11 - Serial data <br>
       -SCLK = Pin 13  - Serial clock <br>
       -LED = 9    - Backlight LED</p>
-
+      
+  <p> ~TFT Screen Hookup: <br>
+      -5V = 5V <br>
+      -Miso = pin 2 <br>
+      -SCK = pin 3 <br>
+      -MOSI = pin 4 <br>
+      -LCD CS = pin 10 <br>
+      -SD CS = not hooked up <br>
+      -D/C = pin 9 <br>
+      -Reset = pin 8 <br>
+      -BL = 5V <br>
+      -Ground = GND <br>
 <p>~ JoyStick Shield Hookup <br>
     This shield provides very easy hookup. The shield simply connects straight into the ardunio board. It also has direct <br>      connection for the Nokia 5110 screen, however it is slightly skewed to the side.</p>
 
