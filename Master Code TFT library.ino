@@ -91,17 +91,13 @@ void loop()
   int buttonX = analogRead(PIN_ANALOG_X);
   int buttonY =  analogRead(PIN_ANALOG_Y);
   choice = menu(); //menu function call
-  Serial.println("Made it back to menu");
-
   if (choice == 1)
   {
-    Serial.println(choice);
     TicTacToe();
   }
   else if (choice == 2)
   {
     EtchaSketch();
-
   }
   else
   {
@@ -265,9 +261,7 @@ void Pong()
     oldPaddleY = paddleY;
 
     test = moveBall(ballDirectionX, ballDirectionY, ballX, ballY, oldBallX, oldBallY, paddleX, paddleY);
-
   }
-
 }
 
 bool moveBall(int& ballDirectionX, int& ballDirectionY, int& ballX, int& ballY, int& oldBallX, int& oldBallY, int& paddleX, int& paddleY)
@@ -303,9 +297,7 @@ bool moveBall(int& ballDirectionX, int& ballDirectionY, int& ballX, int& ballY, 
   {
     TFTscreen.fill(0, 0, 0);
     TFTscreen.rect(ballX, ballY, 5, 5); // redraws the ball
-
   }
-
   delay(80);
   TFTscreen.noStroke();
   TFTscreen.fill(255, 255, 255);
@@ -318,12 +310,10 @@ bool moveBall(int& ballDirectionX, int& ballDirectionY, int& ballX, int& ballY, 
 boolean inPaddle(int x, int y, int rectX, int rectY, int rectWidth, int rectHeight)
 {
   boolean result = false;
-
   if ((x >= rectX && x <= (rectX + rectWidth)) && (y >= rectY && y <= (rectY + rectHeight)))
   {
     result = true;
   }
-
   return result;
 }
 void EtchaSketch()
@@ -344,7 +334,6 @@ void EtchaSketch()
     {
       (pointX = 159);
     }
-
     if (pointX < 0)
     {
       (pointX = 0);
@@ -381,14 +370,13 @@ void TicTacToe()
   char player2;
   int x, y;
   bool respo=true; //for the do while loop for continue game play
-  char *b[3][3];
-  char  * empty ;
-  *empty = '\n';
+  char b[3][3];
+ 
   for(int i =0; i<3; i++)
   {
     for(int j=0; j<3; j++)
     {
-        b[i][j] =empty;  
+        b[i][j] ='\n';  
     }  
   }
   int count = 1;
@@ -462,7 +450,8 @@ stop:
       TFTscreen.text("Player 1:", 0, 0);
       
       HumanMoves(x, y, b);
-      *b[x][y]='X';
+      b[x][y]='X';
+      
       Printarray(b);
       ans =EndGame(b);
       if (ans != 'c')
@@ -472,7 +461,7 @@ stop:
       TFTscreen.background(255, 255, 255);
       TFTscreen.text("Player 2:", 0, 0);
       HumanMoves(x, y, b);
-      *b[x][y]='O';
+      b[x][y]='O';
       Printarray(b);
       ans = EndGame(b);
     }
@@ -507,7 +496,10 @@ s:
       TFTscreen.background(255, 255, 255);
       TFTscreen.text("Player 1:", 0, 0);
       HumanMoves(x, y, b);
-      *b[x][y]='X';
+      b[x][y]='X';
+      Serial.println(x);
+      Serial.println("lulu");
+      Serial.println(y);
       Printarray(b);
       ans = EndGame(b);
       if (ans != 'c')
@@ -540,44 +532,72 @@ sto:
   }
 }
 
-void Printarray( char* b[3][3] )
+void Printarray( char b[3][3] )
 {
   //Row 1
+ 
   TFTscreen.background(255, 255, 255);
   TFTscreen.text("+---+---+---+", 0, 0);
   TFTscreen.text("| ", 0, 20);
-  TFTscreen.text(b[0][0], 10, 8);
-  TFTscreen.text("| ", 44, 20);
-  TFTscreen.text(b[0][1], 36, 20);
+  if(b[0][0]=='X')
+    TFTscreen.text("X", 20, 20);
+  if (b[0][0]=='O')
+    TFTscreen.text("O", 20, 20);
   TFTscreen.text("| ", 48, 20);
-  TFTscreen.text(b[0][2], 60, 20);
-  TFTscreen.text("| ", 72, 20);
-  TFTscreen.text("+---+---+---+", 0, 24);
+  if(b[0][1]=='X')
+    TFTscreen.text("X", 72, 20);
+  if(b[0][1]=='O')
+    TFTscreen.text("O", 72, 20);
+  TFTscreen.text("| ", 96, 20);
+  if(b[0][2]=='X')
+    TFTscreen.text("X", 120, 20);
+  if(b[0][2]=='O')
+    TFTscreen.text("O", 120, 20);
+  TFTscreen.text("| ", 144, 20);
+  TFTscreen.text("+---+---+---+", 0, 34);
   
   //Row 2
-  TFTscreen.text("| ", 0, 42);
-  TFTscreen.text(b[1][0], 10, 42);
-  TFTscreen.text("| ", 24, 42);
-  TFTscreen.text(b[1][1], 36, 42);
-  TFTscreen.text("| ", 48, 42);
-  TFTscreen.text(b[1][2], 60, 42);
-  TFTscreen.text("| ", 72, 42);
-  TFTscreen.text("+---+---+---+", 0, 48);
+  TFTscreen.text("| ", 0, 52);
+  if(b[1][0]=='X')
+    TFTscreen.text("X", 20, 52);
+  if(b[1][0]=='O')
+    TFTscreen.text("O", 20, 52);
+  TFTscreen.text("| ", 48, 52);
+  if(b[1][1]=='X')
+    TFTscreen.text("X", 72, 52);
+  if(b[1][1]=='O')
+    TFTscreen.text("O", 72, 52);
+  TFTscreen.text("| ", 96, 52);
+  if(b[1][2]=='X')
+    TFTscreen.text("X", 120, 52);
+  if(b[1][2]=='O')
+    TFTscreen.text("O", 120, 52);
+  TFTscreen.text("| ", 144, 52);
+  TFTscreen.text("+---+---+---+", 0, 68);
 
   //Row 3
-  TFTscreen.text("| ", 0, 68);
-  TFTscreen.text(b[2][0], 10, 65);
-  TFTscreen.text("| ", 24, 68);
-  TFTscreen.text(b[2][1], 36, 65);
-  TFTscreen.text("| ", 48, 68);
-  TFTscreen.text(b[2][2], 60, 65);
-  TFTscreen.text("| ", 72, 68);
-  TFTscreen.text("+---+---+---+", 0, 70);
+  TFTscreen.text("| ", 0, 88);
+  if(b[2][0]=='X')
+    TFTscreen.text("X", 20, 88);
+  if(b[2][0]=='O')
+    TFTscreen.text("O", 20, 88);
+  TFTscreen.text("| ", 48, 88);
+  if(b[2][1]=='X')
+    TFTscreen.text("X", 72, 88);
+  if(b[2][1]=='O')
+    TFTscreen.text("O", 72, 88);
+  TFTscreen.text("| ", 96, 88);
+  if(b[2][2]=='X')
+    TFTscreen.text("X", 120, 88);
+  if(b[2][2]=='O')
+    TFTscreen.text("O", 120, 88);
+  TFTscreen.text("| ", 144, 88);
+  TFTscreen.text("+---+---+---+", 0, 100);
 
-  delay(8000);
+  delay(4000);
 }
 
-void HumanMoves( int& x, int& y, char * b[][3] )
+void HumanMoves( int& x, int& y, char  b[][3] )
 {
   int count = 1;
   int pressA;
@@ -594,13 +614,11 @@ void HumanMoves( int& x, int& y, char * b[][3] )
       pressA = digitalRead(PIN_BUTTON_RIGHT);
       if (pressA == LOW)
       {
-        
         x = 1;
         goto end;
-        Serial.println("SHHHH");
       }
       buttonY =  analogRead(A1);
-      if (buttonY < 300)
+      if (buttonY < 450)
       {
         if (count == 1)
         {
@@ -619,7 +637,7 @@ void HumanMoves( int& x, int& y, char * b[][3] )
               goto end;
             }
             buttonY =  analogRead(A1);
-          } while ( (buttonY >= 300) && (buttonY <= 400));
+          } while ( (buttonY >= 450) && (buttonY <= 600));
         }
         else if (count == 2)
         {
@@ -638,7 +656,7 @@ void HumanMoves( int& x, int& y, char * b[][3] )
               goto end;
             }
             buttonY =  analogRead(A1);
-          } while ( (buttonY >= 300) && (buttonY <= 400));
+          } while ( (buttonY >= 450) && (buttonY <= 600));
         }
         else if (count == 3)
         {
@@ -657,13 +675,12 @@ void HumanMoves( int& x, int& y, char * b[][3] )
               goto end;
             }
             buttonY =  analogRead(A1);
-          } while ( (buttonY >= 300) && (buttonY <= 400));
+          } while ( (buttonY >= 450) && (buttonY <= 600));
         }
       }
     }
     
 end:
-
 
     for (int i = 0; ; i++)
     {
@@ -674,15 +691,15 @@ end:
         goto end;
       }
       pressB = digitalRead(PIN_BUTTON_DOWN);
-        if (pressB == HIGH)
+        if (pressB == LOW)
         {
           HumanMoves(x,y,b);
         }
       buttonY =  analogRead(A1);
-      if (buttonY < 300)
+      if (buttonY < 450)
       {
         pressB = digitalRead(PIN_BUTTON_DOWN);
-        if (pressB == HIGH)
+        if (pressB == LOW)
         {
           HumanMoves(x,y,b);
         }
@@ -703,7 +720,7 @@ end:
               goto done;
             }
             buttonY =  analogRead(A1);
-          } while ( (buttonY >= 300) && (buttonY <= 400));
+          } while ( (buttonY >= 450) && (buttonY <= 600));
         }
         else if (count == 2)
         {
@@ -721,7 +738,7 @@ end:
               goto done;
             }
             buttonY =  analogRead(A1);
-          } while ( (buttonY >= 300) && (buttonY <= 400));
+          } while ( (buttonY >= 450) && (buttonY <= 600));
         }
         else if (count == 3)
         {
@@ -739,7 +756,7 @@ end:
               goto done;
             }
             buttonY =  analogRead(A1);
-          } while ( (buttonY >= 300) && (buttonY <= 400));
+          } while ( (buttonY >= 450) && (buttonY <= 600));
         }
       }
     }
@@ -747,24 +764,23 @@ done:
    x= x-1;
    y=y-1;
 
-  } while ((*b[x][y] == 'X') || (*b[x][y] == 'O')) ; 
-  
+  } while ((b[x][y] == 'X') || (b[x][y] == 'O'));  
 }
 
-void RandomMoves( char * board[][3] )
+void RandomMoves( char  board[][3] )
 {
   int x = random(3); //Finds first random values of x and y between 1 and 3
   int y = random(3);
   
-  while ((*board[x][y] == 'X') || ( *board[x][y] == 'O')) // If there is already a letter there it will enter loop
+  while ((board[x][y] == 'X') || ( board[x][y] == 'O')) // If there is already a letter there it will enter loop
   {
     
     x = random(3); //It will keep looping until a new place is found without a letter
     y = random(3);
   }
-   *board[x][y]='O';
+   board[x][y]='O';
 }
-char EndGame(char * b[][3]) // returns a t for tie, c for continue, 1 for player 1 won, 2 for player two won
+char EndGame(char  b[][3]) // returns a t for tie, c for continue, 1 for player 1 won, 2 for player two won
 {
   bool tieTest=true;
   char const tie='t';
@@ -776,9 +792,8 @@ char EndGame(char * b[][3]) // returns a t for tie, c for continue, 1 for player
   {
     for(int j=0; j<3; j++)
     {
-      if( *b[i][j] != '\n')//NOTE FOR RIGHT NOW TIE FUNCTION DOES NOT WORK CAN'T SEEM TO TELL WHEN ARRAY IS EMPTY FOR SOME REASON
+      if( b[i][j] == '\n')
       {
-        Serial.println("CHICHIU");
         tieTest = false;
       }
     }
@@ -786,67 +801,67 @@ char EndGame(char * b[][3]) // returns a t for tie, c for continue, 1 for player
   
   //All of the following statements check to see if the various ways to win have happened
   
-  if(*b[0][0]=='X'&&*b[0][1]=='X'&&*b[0][2]=='X')
+  if(b[0][0]=='X'&&b[0][1]=='X'&&b[0][2]=='X')
   {
     return p1w;
   }
-  else if(*b[0][0]=='O'&&*b[0][1]=='O'&&*b[0][2]=='O')
+  else if(b[0][0]=='O'&&b[0][1]=='O'&&b[0][2]=='O')
   {
     return p2w;
   }
-  else if(*b[1][0]=='X'&&*b[1][1]=='X'&&*b[1][2]=='X')
+  else if(b[1][0]=='X'&&b[1][1]=='X'&&b[1][2]=='X')
   {
     return p1w;
   }
-  else if(*b[1][0]=='O'&&*b[1][1]=='O'&&*b[1][2]=='O')
+  else if(b[1][0]=='O'&&b[1][1]=='O'&&b[1][2]=='O')
   {
     return p2w;
   }
-  else if(*b[2][0]=='X'&&*b[2][1]=='X'&&*b[2][2]=='X')
+  else if(b[2][0]=='X'&&b[2][1]=='X'&&b[2][2]=='X')
   {
     return p1w;
   }
-  else if (*b[2][0]=='O'&&*b[2][1]=='O'&&*b[2][2]=='O')
+  else if (b[2][0]=='O'&&b[2][1]=='O'&&b[2][2]=='O')
   {
     return p2w;
   }
-  else if (*b[0][0]=='X'&&*b[1][0]=='X'&&*b[2][0]=='X')
+  else if (b[0][0]=='X'&&b[1][0]=='X'&&b[2][0]=='X')
   {
     return p1w;
   }
-  else if(*b[0][0]=='O'&&*b[1][0]=='O'&&*b[2][0]=='O')
+  else if(b[0][0]=='O'&&b[1][0]=='O'&&b[2][0]=='O')
   {
     return p2w;
   }
-  else if(*b[0][1]=='X'&&*b[1][1]=='X'&&*b[2][1]=='X')
+  else if(b[0][1]=='X'&&b[1][1]=='X'&&b[2][1]=='X')
   {
     return p1w;
   }
-  else if(*b[0][1]=='O'&&*b[1][1]=='O'&&*b[2][1]=='O')
+  else if(b[0][1]=='O'&&b[1][1]=='O'&&b[2][1]=='O')
   {
     return p2w;
   }
-  else if(*b[0][2]=='X'&&*b[1][2]=='X'&&*b[2][2]=='X')
+  else if(b[0][2]=='X'&&b[1][2]=='X'&&b[2][2]=='X')
   {
     return p1w;
   }
-  else if(*b[0][2]=='O'&&*b[1][2]=='O'&&*b[2][2]=='O')
+  else if(b[0][2]=='O'&&b[1][2]=='O'&&b[2][2]=='O')
   {
     return p2w;
   }
-  else if(*b[0][0]=='X'&&*b[1][1]=='X'&&*b[2][2]=='X')
+  else if(b[0][0]=='X'&&b[1][1]=='X'&&b[2][2]=='X')
   {
     return p1w;
   }
-  else if(*b[0][0]=='O'&&*b[1][1]=='O'&&*b[2][2]=='O')
+  else if(b[0][0]=='O'&& b[1][1]=='O'&& b[2][2]=='O')
   {
     return p2w;
   }
-  else if(*b[0][2]=='X'&&*b[1][1]=='X'&&*b[2][0]=='X')
+  else if(b[0][2]=='X'&& b[1][1]=='X'&& b[2][0]=='X')
   {
     return p1w;
   }
-  else if(*b[0][2]=='O'&&*b[1][1]=='O'&&*b[2][0]=='O')
+  else if(b[0][2]=='O'&& b[1][1]=='O'&& b[2][0]=='O')
   {
     return p2w;
   }
