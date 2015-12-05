@@ -24,6 +24,8 @@
   ~ Nokia 5110 LCD Screen <br>
   ~ Arduino TFT LCD screen <br>
   ~Joystick Shield V2.4 from ElecFreaks.com  <br>
+  ~Push and Lock Button (for power switch) <br>
+  ~9 Volt Battery and Battery case <br>
   ~BlueTooth Module HC-05</p>
 
 <p>Project Design:</p>
@@ -53,12 +55,20 @@
 <p>~ JoyStick Shield Hookup <br>
     This shield provides very easy hookup. The shield simply connects straight into the ardunio board. It also has direct <br>      connection for the Nokia 5110 screen, however it is slightly skewed to the side.</p>
 
+<p>~ Power Switch and Battery Hookup <br>
+    For this setup wire was first soldered onto the battery casing on the positve and negative terminals. <br>      
+    From the positive terminal the switch was connected. Our switch had 6 pins on it, we has to use a multimeter to <br> 
+    test which controlled the current. We ended up soldering the positive wire to the left pin, and the wire which would lead <br> 
+    to the Arduino to the middle pin.(Both pins on the same side). Both the negative and new positive wire were then solder straight <br>
+    to the Arduino in the place of the previous battery input jack. </p>
+  
 <p>~ Bluetooth Hookup <br>
       BHurl currently researching, will also update soon!</p>
 
 <p>~Installation Instructions:<br>
-      At the moment each game file is being seperatley built and tested. Once the games are running<br> 
-      they will placed into the Master Code for easy download </p>
+      Choose which code to download based off of the screen you are using. If using the Nokia 5110 Screen <br> 
+      look at the Libaries Required section below. Simply download the two libaries, and place them in your Arduino Libary folder </p>
+      
 <p>~Libaries Required: <br>
       If using the Nokia 5110 screen you will need to download both the Adafruit-PCD8544-Nokia-5110-LCD library. <br>
       and the Adafruit-GFX-Library-master library. Links both listed here: <br>
